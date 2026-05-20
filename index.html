@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>微信游戏社区 Demo</title>
+<style>
+:root {
+  --teal: #07C9A8;
+  --teal-bg: #E8F8F5;
+  --black: #111;
+  --gray1: #333;
+  --gray2: #666;
+  --gray3: #999;
+  --gray4: #ccc;
+  --gray5: #f0f0f0;
+  --gray6: #f7f7f7;
+  --blue-link: #576b95;
+  --red: #FA5151;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+.device {
+  width: 375px;
+  height: 812px;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.page.active { display: flex; }
+
+/* === iOS Status Bar === */
+.ios-status {
+  height: 44px;
+  padding: 14px 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: #fff;
+}
+.ios-status .t { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+.ios-status .r { font-size: 13px; color: var(--gray2); }
+
+/* === 朋友Tab 顶部导航 === */
+.feed-nav {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 14px;
+  flex-shrink: 0;
+  border-bottom: 0.5px solid var(--gray5);
+}
+.feed-nav .fn-back { font-size: 24px; color: var(--black); cursor: pointer; margin-right: 8px; font-weight: 300; }
+.feed-nav .fn-tabs { display: flex; align-items: center; gap: 0; flex: 1; justify-content: center; }
+.feed-nav .fn-tab {
+  font-size: 16px; color: var(--gray3); cursor: pointer;
+  position: relative; padding: 0 14px 10px; line-height: 1;
+}
+.feed-nav .fn-tab.active { color: var(--black); font-weight: 600; }
+.feed-nav .fn-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 18px; height: 2.5px; background: var(--black); border-radius: 2px;
+}
+/* Avatar with badge - like xiaohongshu style */
+.fn-tab-avatar {
+  position: relative; display: flex; align-items: center; margin-right: 2px;
+}
+.fn-tab-avatar img {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+.fn-tab-avatar .badge {
+  position: absolute; top: -6px; right: -12px;
+  background: var(--red); color: #fff; font-size: 9px; font-weight: 500;
+  padding: 2px 4px; border-radius: 6px; white-space: nowrap; line-height: 1;
+}
+.feed-nav .fn-right { margin-left: auto; display: flex; gap: 16px; align-items: center; }
+.feed-nav .fn-right .fn-icon { width: 22px; height: 22px; cursor: pointer; opacity: 0.7; }
+
+/* === Feed List === */
+.feed-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.feed-scroll::-webkit-scrollbar { display: none; }
+
+.fi { padding: 14px 16px 10px; }
+.fi + .fi { border-top: 0.5px solid var(--gray5); }
+.fi-invite { display: none; }
+.fi-mention { font-size: 13px; color: var(--gray3); margin-top: 6px; }
+.fi-user { display: flex; align-items: flex-start; gap: 10px; }
+.fi-user img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.fi-body { flex: 1; min-width: 0; }
+.fi-name { font-size: 15px; font-weight: 500; color: var(--black); }
+.fi-meta { font-size: 13px; color: var(--gray3); margin-top: 1px; }
+.fi-meta .game-tag { color: var(--teal); }
+.fi-text { font-size: 15px; color: var(--gray1); line-height: 1.5; margin-top: 6px; }
+.fi-text .at { color: var(--blue-link); }
+
+/* Game card in feed */
+.fi-game {
+  background: var(--gray6); border-radius: 8px; padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px; margin-top: 8px;
+}
+.fi-game img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; }
+.fi-game .fg-info { flex: 1; }
+.fi-game .fg-name { font-size: 14px; font-weight: 500; color: var(--black); }
+.fi-game .fg-tags { font-size: 11px; color: var(--gray3); margin-top: 2px; }
+.fi-game .fg-tags span { background: var(--gray5); padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+.fi-game .fg-btn {
+  background: var(--teal); color: #fff; border: none; border-radius: 4px;
+  padding: 5px 12px; font-size: 12px; font-weight: 500; cursor: pointer;
+}
+
+/* Battle report */
+.fi-battle {
+  background: var(--gray6); border-radius: 8px; padding: 10px 14px;
+  margin-top: 8px; font-size: 13px; color: var(--gray2); line-height: 1.7;
+}
+.fi-battle .title { font-size: 14px; color: var(--black); font-weight: 500; margin-bottom: 4px; }
+
+.fi-mention { font-size: 13px; color: var(--gray3); margin-top: 6px; }
+.fi-time { font-size: 12px; color: var(--gray4); margin-top: 4px; }
+.fi-dots {
+  position: absolute; bottom: 14px; right: 16px;
+  width: 32px; height: 20px; border: 1px solid var(--gray5); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+}
+.fi-dots::before, .fi-dots::after {
+  content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--gray2);
+}
+.fi { position: relative; }
+
+/* Dots action popup */
+.fi-action-bar {
+  position: absolute; bottom: 10px; right: 54px;
+  background: #2c2c2c; border-radius: 6px; padding: 6px 10px;
+  display: none; align-items: center; gap: 14px; z-index: 20;
+}
+.fi-action-bar.show { display: flex; }
+.fi-action-bar .ab-item { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.fi-action-bar .ab-item span { font-size: 16px; }
+.fi-action-bar .ab-item .ab-label { font-size: 10px; color: #fff; }
+
+/* Comment input bar - anchored to page bottom */
+.fi-comment-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 375px; background: #fff; border-top: 0.5px solid var(--gray5);
+  display: none; flex-direction: column; z-index: 300;
+}
+.fi-comment-bar.show { display: flex; }
+.fi-comment-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+}
+.fi-comment-row input {
+  flex: 1; padding: 8px 12px; background: var(--gray6); border-radius: 18px;
+  border: none; outline: none; font-size: 14px;
+}
+.fi-comment-row .cb-at {
+  color: var(--teal); font-size: 20px; font-weight: 600; cursor: pointer;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: var(--teal-bg); border-radius: 50%;
+}
+.fi-comment-row .cb-send {
+  color: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
+  background: var(--teal); border: none; border-radius: 14px; padding: 6px 14px;
+}
+.fi-comment-kb {
+  background: #d1d5db; height: 220px;
+  display: flex; flex-direction: column; gap: 8px; padding: 12px 4px; justify-content: center; align-items: center;
+}
+.fi-comment-kb .kr { display: flex; gap: 4px; }
+.fi-comment-kb .kr .k {
+  background: #fff; border-radius: 5px; padding: 9px 8px; font-size: 15px;
+  min-width: 30px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.fi-comment-kb .kr .k.w { min-width: 44px; background: #ADB5BD; color: #fff; font-size: 12px; }
+
+/* === Compose Page === */
+.cmp-nav {
+  height: 44px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; flex-shrink: 0;
+}
+.cmp-nav .cn-cancel { font-size: 16px; color: var(--black); cursor: pointer; }
+.cmp-nav .cn-circle {
+  font-size: 16px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+}
+.cmp-nav .cn-circle svg { width: 12px; height: 12px; }
+.cmp-nav .cn-publish {
+  background: var(--teal); color: #fff; border: none; border-radius: 16px;
+  padding: 6px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.cmp-nav .cn-publish.off { background: var(--gray4); }
+
+.cmp-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px 4px; }
+.cmp-user img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.cmp-user .cu-name { font-size: 15px; font-weight: 500; }
+.cmp-user .cu-meta { font-size: 12px; color: var(--gray3); margin-top: 1px; }
+
+.cmp-textarea {
+  padding: 10px 16px; font-size: 16px; line-height: 1.6;
+  border: none; outline: none; resize: none; color: var(--gray1);
+  white-space: pre-wrap; word-wrap: break-word;
+}
+.cmp-textarea:empty::before { content: attr(data-placeholder); color: #bbb; }
+
+.cmp-at-row { padding: 0 16px 8px; }
+.cmp-at-row .at { color: var(--blue-link); font-size: 15px; margin-right: 6px; }
+
+/* Tool list (keyboard hidden) */
+.cmp-tools { border-top: 0.5px solid var(--gray5); flex-shrink: 0; }
+.cmp-tool-item {
+  display: flex; align-items: center; padding: 15px 16px;
+  border-bottom: 0.5px solid var(--gray5); cursor: pointer;
+}
+.cmp-tool-item:last-child { border-bottom: none; }
+.cmp-tool-item:active { background: var(--gray6); }
+.cmp-tool-item .ti-icon { width: 20px; margin-right: 10px; font-size: 17px; text-align: center; }
+.cmp-tool-item .ti-label { flex: 1; font-size: 15px; color: var(--black); }
+.cmp-tool-item .ti-arrow { color: var(--gray4); font-size: 16px; }
+.cmp-tool-item.hl .ti-icon, .cmp-tool-item.hl .ti-label { color: var(--teal); }
+.cmp-remind-avatars { display: flex; gap: -4px; margin-left: auto; margin-right: 8px; }
+.cmp-remind-avatars img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-left: -6px; border: 1.5px solid #fff; }
+.cmp-remind-avatars img:first-child { margin-left: 0; }
+.cmp-tool-tag {
+  display: inline-block; font-size: 12px; background: var(--gray5);
+  padding: 2px 8px; border-radius: 4px; color: var(--gray2); margin-left: 6px;
+}
+
+/* Keyboard toolbar */
+.cmp-kb-bar {
+  display: flex; align-items: center; gap: 16px; padding: 10px 14px;
+  background: #f4f4f4; border-top: 0.5px solid #ddd; flex-shrink: 0;
+}
+.cmp-kb-bar .kb { font-size: 14px; color: var(--gray2); cursor: pointer; display: flex; align-items: center; gap: 3px; }
+.cmp-kb-bar .kb.hl { color: var(--teal); font-weight: 500; }
+.cmp-keyboard {
+  background: #d1d5db; flex-shrink: 0; height: 260px;
+  display: flex; flex-direction: column; gap: 8px; padding: 12px 4px; justify-content: center; align-items: center;
+}
+.cmp-keyboard .kr { display: flex; gap: 5px; }
+.cmp-keyboard .kr .k {
+  background: #fff; border-radius: 5px; padding: 10px 8px; font-size: 16px;
+  min-width: 32px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.cmp-keyboard .kr .k.w { min-width: 48px; background: #ADB5BD; color: #fff; font-size: 13px; }
+
+/* === Bottom Sheet === */
+.bs-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 100; display: none; transition: opacity 0.2s;
+}
+.bs-overlay.show { display: block; }
+.bs-sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: #fff; border-radius: 10px 10px 0 0;
+  max-height: 72%; overflow-y: auto; z-index: 101;
+  display: none; padding-bottom: env(safe-area-inset-bottom, 10px);
+}
+.bs-sheet.show { display: block; }
+.bs-sheet::-webkit-scrollbar { display: none; }
+.bs-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 0.5px solid var(--gray5); }
+.bs-head .bx { font-size: 22px; color: var(--gray3); cursor: pointer; font-weight: 300; }
+.bs-head .bt { font-size: 16px; font-weight: 500; }
+.bs-search { margin: 10px 16px; background: var(--gray5); border-radius: 18px; padding: 8px 14px; font-size: 14px; color: var(--gray3); text-align: center; }
+.bs-label { font-size: 13px; color: var(--gray3); padding: 12px 16px 6px; }
+.bs-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; }
+.bs-row:active { background: var(--gray6); }
+.bs-row img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+.bs-row .br-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--gray5); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.bs-row .br-text { flex: 1; }
+.bs-row .br-text .main { font-size: 15px; color: var(--black); }
+.bs-row .br-text .sub { font-size: 12px; color: var(--gray3); margin-top: 2px; }
+.bs-row .br-text .new-tag { display: inline-block; background: var(--red); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+.bs-divider { height: 0.5px; background: var(--gray5); margin: 0 16px; }
+.bs-more { text-align: center; font-size: 14px; color: var(--gray3); padding: 12px; cursor: pointer; }
+
+/* === Selector Page === */
+.sel-search { margin: 10px 16px; background: var(--gray5); border-radius: 18px; padding: 9px 14px; font-size: 14px; color: var(--gray3); text-align: center; }
+.sel-label { font-size: 13px; color: var(--gray3); padding: 14px 16px 8px; font-weight: 400; }
+.sel-smart { padding: 0 16px 14px; overflow: hidden; }
+.sel-smart-list { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 2px; }
+.sel-smart-list::-webkit-scrollbar { display: none; }
+.sel-si { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 54px; cursor: pointer; position: relative; }
+.sel-si img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; }
+.sel-si .sc { position: absolute; top: 32px; right: 4px; width: 16px; height: 16px; background: var(--teal); border-radius: 50%; border: 2px solid #fff; display: none; align-items: center; justify-content: center; }
+.sel-si .sc::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
+.sel-si.on .sc { display: flex; }
+.sel-si .sn { font-size: 11px; color: var(--gray2); max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
+
+.sel-divider { height: 8px; background: var(--gray6); }
+
+.sel-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; }
+.sel-row:active { background: var(--gray6); }
+.sel-row .sr-ck { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--gray4); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.sel-row .sr-ck.on { background: var(--teal); border-color: var(--teal); }
+.sel-row .sr-ck.on::after { content: '✓'; color: #fff; font-size: 12px; }
+.sel-row img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.sel-row .sr-name { flex: 1; font-size: 15px; color: var(--black); }
+
+.sel-bottom {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px 16px; background: #fff; border-top: 0.5px solid var(--gray5);
+  display: flex; align-items: center; z-index: 10;
+}
+.sel-bottom .sb-avatars { flex: 1; display: flex; gap: 6px; }
+.sel-bottom .sb-avatars img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.sel-bottom .sb-btn { background: var(--teal); color: #fff; border: none; border-radius: 6px; padding: 9px 20px; font-size: 15px; cursor: pointer; }
+
+/* === Visibility Page === */
+.vis-row { padding: 16px; border-bottom: 0.5px solid var(--gray5); cursor: pointer; }
+.vis-row:active { background: var(--gray6); }
+.vis-row .vr-top { display: flex; align-items: center; justify-content: space-between; }
+.vis-row .vr-title { font-size: 16px; color: var(--black); }
+.vis-row .vr-ck { color: var(--teal); font-size: 18px; display: none; }
+.vis-row.on .vr-ck { display: block; }
+.vis-row .vr-desc { font-size: 13px; color: var(--gray3); margin-top: 3px; }
+.vis-sub { padding: 0 16px; }
+.vis-sub-row { padding: 13px 0; border-bottom: 0.5px solid var(--gray5); cursor: pointer; }
+.vis-sub-row:last-child { border-bottom: none; }
+.vis-sub-row .vsr-title { font-size: 15px; color: var(--blue-link); }
+.vis-sub-row .vsr-desc { font-size: 12px; color: var(--gray3); margin-top: 2px; }
+.vis-import { padding: 14px 16px; border-bottom: 0.5px solid var(--gray5); display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 15px; }
+.vis-import::after { content: '›'; font-size: 18px; color: var(--gray4); }
+
+/* === Messages Page === */
+.msg-group { border-bottom: 8px solid var(--gray6); }
+.msg-item { display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-bottom: 0.5px solid var(--gray5); cursor: pointer; }
+.msg-item:active { background: var(--gray6); }
+.msg-item .mi-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.msg-item .mi-icon.yel { background: #FEF9E7; }
+.msg-item .mi-icon.blu { background: #EBF5FB; }
+.msg-item .mi-icon.grn { background: #E8F8F5; }
+.msg-item .mi-text { flex: 1; font-size: 16px; color: var(--black); }
+.msg-item .mi-arr { color: var(--gray4); font-size: 16px; }
+
+.msg-notif { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border-bottom: 0.5px solid var(--gray5); cursor: pointer; }
+.msg-notif:active { background: var(--gray6); }
+.msg-notif.hl { background: #f0fdf9; }
+.msg-notif img.na { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.msg-notif .nb { flex: 1; }
+.msg-notif .nb .nm { font-size: 14px; color: var(--gray1); line-height: 1.5; }
+.msg-notif .nb .nm b { font-weight: 500; color: var(--black); }
+.msg-notif .nb .ns { font-size: 12px; color: var(--gray3); margin-top: 3px; }
+.msg-notif .nt { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--gray5); }
+.msg-notif .nbtn { border: 1px solid var(--teal); border-radius: 4px; padding: 3px 8px; font-size: 12px; color: var(--teal); white-space: nowrap; flex-shrink: 0; }
+.msg-footer { text-align: center; font-size: 12px; color: var(--gray4); padding: 20px; }
+
+/* === Profile Page === */
+.prof-top { padding: 16px; }
+.prof-row1 { display: flex; align-items: center; gap: 12px; }
+.prof-row1 img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+.prof-row1 .pr-name { font-size: 18px; font-weight: 600; color: var(--black); }
+.prof-row1 .pr-tags { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.prof-row1 .pr-tags span { font-size: 11px; padding: 2px 6px; border-radius: 10px; }
+.pr-tag-g { background: #E8F8F5; color: var(--teal); }
+.pr-tag-y { background: #FEF9E7; color: #D4AC0D; }
+.pr-tag-b { background: #EBF5FB; color: #2E86C1; }
+.prof-sign { font-size: 13px; color: var(--gray3); margin-top: 10px; }
+.prof-stats { font-size: 13px; color: var(--gray2); margin-top: 6px; }
+.prof-btns { display: flex; gap: 10px; margin-top: 12px; }
+.prof-btns .pb { padding: 7px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; }
+.prof-btns .pb-primary { background: var(--teal); color: #fff; }
+.prof-btns .pb-outline { background: #fff; color: var(--black); border: 1px solid var(--gray5); }
+.prof-tabs { display: flex; gap: 24px; padding: 0 16px; border-bottom: 0.5px solid var(--gray5); }
+.prof-tabs .pt { font-size: 15px; color: var(--gray3); padding: 10px 0; cursor: pointer; }
+.prof-tabs .pt.active { color: var(--black); font-weight: 500; border-bottom: 2px solid var(--black); }
+.prof-post { padding: 14px 16px; border-bottom: 0.5px solid var(--gray5); }
+.prof-post .pp-lock { font-size: 12px; color: var(--gray3); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+
+/* === Modal === */
+.modal-bg { position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-bg.show { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 24px 20px; width: 280px; text-align: center; }
+.modal h3 { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
+.modal p { font-size: 13px; color: var(--gray3); margin-bottom: 14px; }
+.modal input { width: 100%; padding: 10px; border: 1px solid var(--gray5); border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 14px; }
+.modal input:focus { border-color: var(--teal); }
+.modal .mbtn-row { display: flex; gap: 10px; }
+.modal .mbtn-row button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
+.modal .mb-cancel { background: var(--gray5); color: var(--gray2); }
+.modal .mb-save { background: var(--teal); color: #fff; }
+
+/* === Demo Nav === */
+.demo-dock {
+  position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(30,30,30,0.92); backdrop-filter: blur(10px);
+  padding: 8px 12px; border-radius: 20px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; z-index: 9999; max-width: 95vw;
+}
+.demo-dock span {
+  padding: 5px 9px; font-size: 11px; color: rgba(255,255,255,0.8); cursor: pointer;
+  border-radius: 4px; transition: background 0.15s;
+}
+.demo-dock span:hover { background: rgba(255,255,255,0.15); }
+</style>
+</head>
+<body>
+
+<div class="device">
+
+<!-- ===== PAGE: 朋友Tab信息流 ===== -->
+<div class="page active" id="p-feed">
+  <div class="ios-status"><span class="t">12:10</span><span class="r">●●●● ⚡79%</span></div>
+  <div class="feed-nav">
+    <span class="fn-back">‹</span>
+    <div class="fn-tabs">
+      <span class="fn-tab active" style="display:flex;align-items:center;gap:0;padding-left:0;padding-right:14px;">
+        <span class="fn-tab-avatar"><img src="https://i.pravatar.cc/56?img=3"><span class="badge">提到你</span></span>
+      </span>
+      <span class="fn-tab">圈子</span>
+      <span class="fn-tab">找游戏</span>
+    </div>
+    <div class="fn-right">
+      <svg class="fn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg class="fn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="go('p-profile')"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  </div>
+
+  <div class="feed-scroll">
+    <!-- Invited post (new feature) -->
+    <div class="fi" id="fi-first">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=3">
+        <div class="fi-body">
+          <div class="fi-name">沉默是金</div>
+          <div class="fi-meta">玩了 <span class="game-tag">🎮 王者荣耀</span> ♪</div>
+          <div class="fi-text">昨晚那把五杀翻盘太刺激了！<span class="at">@shynew</span> <span class="at">@kobe</span> 你们还记得那波团吗哈哈哈</div>
+          <div class="fi-game">
+            <img src="https://img.icons8.com/fluency/96/knight.png">
+            <div class="fg-info"><div class="fg-name">王者荣耀</div><div class="fg-tags"><span>角色</span><span>MOBA</span></div></div>
+            <button class="fg-btn">立即玩</button>
+          </div>
+          <div class="fi-mention">提到了我</div>
+          <div class="fi-time">刚刚</div>
+        </div>
+      </div>
+      <div class="fi-dots" onclick="toggleActionBar()"></div>
+      <div class="fi-action-bar" id="action-bar">
+        <div class="ab-item" onclick="toggleActionBar()"><span>😊</span><div class="ab-label">表态</div></div>
+        <div class="ab-item" onclick="toggleActionBar()"><span>👍</span><div class="ab-label">赞</div></div>
+        <div class="ab-item" onclick="showCommentBar()"><span>💬</span><div class="ab-label">评论</div></div>
+      </div>
+      <div class="fi-comment-bar" id="comment-bar">
+        <div class="fi-comment-row">
+          <input placeholder="@好友来看这条帖子..." id="comment-input">
+          <span class="cb-at" onclick="go('p-sel-at')" title="@好友">@</span>
+          <button class="cb-send" onclick="hideCommentBar()">发送</button>
+        </div>
+        <div class="fi-comment-kb">
+          <div class="kr"><span class="k">Q</span><span class="k">W</span><span class="k">E</span><span class="k">R</span><span class="k">T</span><span class="k">Y</span><span class="k">U</span><span class="k">I</span><span class="k">O</span><span class="k">P</span></div>
+          <div class="kr"><span class="k">A</span><span class="k">S</span><span class="k">D</span><span class="k">F</span><span class="k">G</span><span class="k">H</span><span class="k">J</span><span class="k">K</span><span class="k">L</span></div>
+          <div class="kr"><span class="k w">⇧</span><span class="k">Z</span><span class="k">X</span><span class="k">C</span><span class="k">V</span><span class="k">B</span><span class="k">N</span><span class="k">M</span><span class="k w">⌫</span></div>
+          <div class="kr"><span class="k w">123</span><span class="k" style="min-width:130px;"></span><span class="k w">换行</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post 2 -->
+    <div class="fi">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=11">
+        <div class="fi-body">
+          <div class="fi-name">2104 倪好</div>
+          <div class="fi-meta">玩了 <span class="game-tag">🎮 咸鱼之王</span> ♪</div>
+          <div class="fi-game">
+            <img src="https://img.icons8.com/fluency/96/fish-food.png">
+            <div class="fg-info"><div class="fg-name">咸鱼之王</div><div class="fg-tags"><span>角色</span><span>卡牌</span></div></div>
+            <button class="fg-btn">立即玩</button>
+          </div>
+          <div class="fi-time">昨天</div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <!-- Post 3 -->
+    <div class="fi">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=5">
+        <div class="fi-body">
+          <div class="fi-name">沉默是金</div>
+          <div class="fi-meta">玩了 <span class="game-tag">🎮 腾讯欢乐斗地主</span> ♪</div>
+          <div class="fi-battle">
+            <div class="title">腾讯欢乐斗地主老司机</div>
+            飞机起飞，连环夺胜<br>三带一，手气起，胜利在望笑嘻嘻
+          </div>
+          <div class="fi-more" style="font-size:14px;color:var(--blue-link);cursor:pointer;">查看更多</div>
+          <div class="fi-time">昨天</div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <!-- Post 4 -->
+    <div class="fi">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=8">
+        <div class="fi-body">
+          <div class="fi-name">潜老师</div>
+          <div class="fi-meta">玩了 <span class="game-tag">🎮 QQ经典农场</span> ♪</div>
+          <div class="fi-game">
+            <img src="https://img.icons8.com/fluency/96/farm.png">
+            <div class="fg-info"><div class="fg-name">QQ经典农场</div><div class="fg-tags"><span>休闲</span><span>经营</span></div></div>
+            <button class="fg-btn">立即玩</button>
+          </div>
+          <div class="fi-time">昨天</div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <!-- Post 5 -->
+    <div class="fi">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=15">
+        <div class="fi-body">
+          <div class="fi-name">杨涵凯13315412001</div>
+          <div class="fi-meta">关于忙忙碌碌但无所收获的一天 <span class="game-tag">🎮 王者荣耀</span></div>
+          <div class="fi-battle">
+            典韦 失败 12/5/3<br>少打多多<br>终结敌方英雄<br><br>典韦 胜利 7/1/6<br>踩草击杀敌方英雄
+          </div>
+          <div class="fi-time">昨天</div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <div style="height:60px;"></div>
+  </div>
+</div>
+
+<!-- ===== PAGE: 发帖（键盘未唤起） ===== -->
+<div class="page" id="p-compose">
+  <div class="ios-status"><span class="t">12:08</span><span class="r">●●●● ⚡79%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-feed')">取消</span>
+    <span class="cn-circle" onclick="openSheet()">王者荣耀圈 <svg viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
+    <button class="cn-publish" onclick="go('p-feed')">发表</button>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="cmp-user">
+      <img src="https://i.pravatar.cc/76?img=47">
+      <div><div class="cu-name">Venus</div><div class="cu-meta">已玩77小时 · 3.4年玩家 · 更换 ⇌</div></div>
+    </div>
+    <div class="cmp-textarea" contenteditable="false" onclick="go('p-compose-kb')" style="min-height:80px;flex:0 1 auto;">昨晚那把五杀翻盘太刺激了！队友们冲冲冲 <span style="color:#576b95;">@shynew</span> <span style="color:#576b95;">@kobe</span></div>
+    <div class="cmp-tools">
+      <div class="cmp-tool-item"><span class="ti-icon">#</span><span class="ti-label">话题</span><span class="ti-arrow">›</span></div>
+      <div class="cmp-tool-item"><span class="ti-icon">◇</span><span class="ti-label">投票</span><span class="ti-arrow">›</span></div>
+      <div class="cmp-tool-item" onclick="go('p-sel-remind')"><span class="ti-icon">📨</span><span class="ti-label">提醒谁看</span><span class="ti-arrow">›</span></div>
+      <div class="cmp-tool-item" onclick="go('p-sel-at')"><span class="ti-icon">@</span><span class="ti-label">用户</span><span class="ti-arrow">›</span></div>
+      <div class="cmp-tool-item"><span class="ti-icon">📝</span><span class="ti-label">写长图文</span></div>
+    </div>
+    <div style="flex:1;"></div>
+  </div>
+
+  <!-- Bottom sheet -->
+  <div class="bs-overlay" id="bs-ol" onclick="closeSheet()"></div>
+  <div class="bs-sheet" id="bs-sh">
+    <div class="bs-head"><span class="bx" onclick="closeSheet()">×</span><span class="bt">选择可见范围</span><span style="width:24px;"></span></div>
+    <div class="bs-search">🔍 搜索圈子</div>
+    <div class="bs-label">发表到圈子</div>
+    <div class="bs-row"><img src="https://img.icons8.com/fluency/80/knight.png"><div class="br-text"><div class="main">王者荣耀</div></div></div>
+    <div class="bs-row"><img src="https://img.icons8.com/fluency/80/fish-food.png"><div class="br-text"><div class="main">咸鱼之王</div></div></div>
+    <div class="bs-row"><img src="https://img.icons8.com/fluency/80/farm.png"><div class="br-text"><div class="main">QQ经典农场</div></div></div>
+    <div class="bs-row"><img src="https://img.icons8.com/fluency/80/controller.png"><div class="br-text"><div class="main">向往的生活</div></div></div>
+    <div class="bs-more">更多圈子 ∨</div>
+    <div class="bs-label">设为不公开</div>
+    <div class="bs-row"><div class="br-icon">👥</div><div class="br-text"><div class="main">仅朋友可见</div><div class="sub">仅互相关注、微信朋友可见</div></div></div>
+    <div class="bs-row" onclick="closeSheet();go('p-visibility')" style="background:var(--teal-bg);">
+      <div class="br-icon" style="background:var(--teal-bg);">👤✓</div>
+      <div class="br-text"><div class="main">指定好友可见 <span class="new-tag">NEW</span></div><div class="sub">选择特定好友，仅他们可见</div></div>
+    </div>
+    <div class="bs-row"><div class="br-icon">🔒</div><div class="br-text"><div class="main">仅自己可见</div></div></div>
+  </div>
+</div>
+
+<!-- ===== PAGE: 发帖（键盘唤起） ===== -->
+<div class="page" id="p-compose-kb">
+  <div class="ios-status"><span class="t">15:57</span><span class="r">●●●● ⚡60%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-compose')">取消</span>
+    <span class="cn-circle">王者荣耀圈 <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
+    <button class="cn-publish off">发表</button>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;">
+    <div class="cmp-user">
+      <img src="https://i.pravatar.cc/76?img=47">
+      <div><div class="cu-name">Venus</div><div class="cu-meta">已玩77小时 · 3.4年玩家 · 更换 ⇌</div></div>
+    </div>
+    <div class="cmp-textarea" contenteditable="true" style="flex:1;min-height:60px;cursor:text;">昨晚那把五杀翻盘太刺激了！队友们冲冲冲 <span style="color:#576b95;">@shynew</span> <span style="color:#576b95;">@kobe</span></div>
+    <div class="cmp-kb-bar">
+      <span class="kb"># 话题</span>
+      <span class="kb" onclick="go('p-sel-remind')">📨 提醒谁看</span>
+      <span class="kb" onclick="go('p-sel-at')">@ 用户</span>
+      <span class="kb">◇ 投票</span>
+      <span class="kb">📝 写文章</span>
+    </div>
+    <div class="cmp-keyboard">
+      <div class="kr"><span class="k">Q</span><span class="k">W</span><span class="k">E</span><span class="k">R</span><span class="k">T</span><span class="k">Y</span><span class="k">U</span><span class="k">I</span><span class="k">O</span><span class="k">P</span></div>
+      <div class="kr"><span class="k">A</span><span class="k">S</span><span class="k">D</span><span class="k">F</span><span class="k">G</span><span class="k">H</span><span class="k">J</span><span class="k">K</span><span class="k">L</span></div>
+      <div class="kr"><span class="k w">⇧</span><span class="k">Z</span><span class="k">X</span><span class="k">C</span><span class="k">V</span><span class="k">B</span><span class="k">N</span><span class="k">M</span><span class="k w">⌫</span></div>
+      <div class="kr"><span class="k w">123</span><span class="k" style="min-width:150px;"></span><span class="k w">换行</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: 谁可以看 ===== -->
+<div class="page" id="p-visibility">
+  <div class="ios-status"><span class="t">15:58</span><span class="r">●●●● ⚡60%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-compose')">✕</span>
+    <span style="font-size:17px;font-weight:500;">谁可以看</span>
+    <span style="width:40px;"></span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-bottom:56px;">
+    <div class="sel-search">🔍 搜索</div>
+    <div class="vis-import" onclick="void(0)">导入标签中的朋友</div>
+    <div class="sel-label">最近曾一起玩</div>
+    <div class="sel-smart">
+      <div class="sel-smart-list">
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=3"><div class="sc"></div><span class="sn">shynew</span></div>
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=8"><div class="sc"></div><span class="sn">kobe</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=11"><div class="sc"></div><span class="sn">2104倪好</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=15"><div class="sc"></div><span class="sn">杨涵凯</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=20"><div class="sc"></div><span class="sn">长行</span></div>
+      </div>
+    </div>
+    <div class="sel-divider"></div>
+    <div class="sel-label">游戏社区好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=3"><span class="sr-name">shynew</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=8"><span class="sr-name">kobe</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=11"><span class="sr-name">2104倪好</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=15"><span class="sr-name">杨涵凯</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=20"><span class="sr-name">长行</span></div>
+    <div class="sel-label">微信好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=25"><span class="sr-name">曾琪</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=30"><span class="sr-name">龚名志</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=32"><span class="sr-name">闵晨</span></div>
+  </div>
+  <div class="sel-bottom">
+    <div class="sb-avatars"><img src="https://i.pravatar.cc/64?img=3"><img src="https://i.pravatar.cc/64?img=8"></div>
+    <button class="sb-btn" onclick="go('p-compose')">完成(2)</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: 选人（艾特好友） ===== -->
+<div class="page" id="p-sel-at">
+  <div class="ios-status"><span class="t">15:58</span><span class="r">●●●● ⚡60%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-compose')">✕</span>
+    <span style="font-size:17px;font-weight:500;">艾特好友</span>
+    <span style="width:40px;"></span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-bottom:56px;">
+    <div class="sel-search">🔍 搜索</div>
+    <div class="vis-import" onclick="void(0)">导入标签中的朋友</div>
+    <div class="sel-label">最近曾一起玩</div>
+    <div class="sel-smart">
+      <div class="sel-smart-list">
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=3"><div class="sc"></div><span class="sn">shynew</span></div>
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=8"><div class="sc"></div><span class="sn">kobe</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=11"><div class="sc"></div><span class="sn">2104倪好</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=15"><div class="sc"></div><span class="sn">杨涵凯</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=20"><div class="sc"></div><span class="sn">长行</span></div>
+      </div>
+    </div>
+    <div class="sel-divider"></div>
+    <div class="sel-label">游戏社区好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=3"><span class="sr-name">shynew</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=8"><span class="sr-name">kobe</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=11"><span class="sr-name">2104倪好</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=15"><span class="sr-name">杨涵凯</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=20"><span class="sr-name">长行</span></div>
+    <div class="sel-label">微信好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=25"><span class="sr-name">曾琪</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=30"><span class="sr-name">龚名志</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=32"><span class="sr-name">闵晨</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=36"><span class="sr-name">小友</span></div>
+  </div>
+  <div class="sel-bottom">
+    <div class="sb-avatars"><img src="https://i.pravatar.cc/64?img=3"><img src="https://i.pravatar.cc/64?img=8"></div>
+    <button class="sb-btn" onclick="go('p-compose')">完成(2)</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: 选人（指定可见） ===== -->
+<div class="page" id="p-sel-vis">
+  <div class="ios-status"><span class="t">15:59</span><span class="r">●●●● ⚡60%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-visibility')">✕</span>
+    <span style="font-size:17px;font-weight:500;">选择朋友</span>
+    <span style="width:40px;"></span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-bottom:56px;">
+    <div class="sel-search">🔍 搜索</div>
+    <div class="vis-import" onclick="void(0)">导入标签中的朋友</div>
+    <div class="sel-label">最近曾一起玩</div>
+    <div class="sel-smart">
+      <div class="sel-smart-list">
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=3"><div class="sc"></div><span class="sn">shynew</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=8"><div class="sc"></div><span class="sn">kobe</span></div>
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=11"><div class="sc"></div><span class="sn">2104倪好</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=15"><div class="sc"></div><span class="sn">杨涵凯</span></div>
+      </div>
+    </div>
+    <div class="sel-divider"></div>
+    <div class="sel-label">游戏社区好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=3"><span class="sr-name">shynew</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=8"><span class="sr-name">kobe</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=11"><span class="sr-name">2104倪好</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=15"><span class="sr-name">杨涵凯</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=20"><span class="sr-name">长行</span></div>
+    <div class="sel-label">微信好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=25"><span class="sr-name">曾琪</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=30"><span class="sr-name">龚名志</span></div>
+  </div>
+  <div class="sel-bottom">
+    <div class="sb-avatars"><img src="https://i.pravatar.cc/64?img=3"><img src="https://i.pravatar.cc/64?img=11"></div>
+    <button class="sb-btn" onclick="document.getElementById('m-tag').classList.add('show')">选择(2)</button>
+  </div>
+  <div class="modal-bg" id="m-tag">
+    <div class="modal">
+      <h3>保存为标签</h3>
+      <p>下次可以直接选用这组朋友</p>
+      <input placeholder="例如：开黑队友" value="王者五排">
+      <div class="mbtn-row">
+        <button class="mb-cancel" onclick="document.getElementById('m-tag').classList.remove('show');go('p-visibility')">不了</button>
+        <button class="mb-save" onclick="document.getElementById('m-tag').classList.remove('show');go('p-visibility')">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: 提醒谁看（轻量，不在正文显示@） ===== -->
+<div class="page" id="p-sel-remind">
+  <div class="ios-status"><span class="t">15:58</span><span class="r">●●●● ⚡60%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-compose')">✕</span>
+    <span style="font-size:17px;font-weight:500;">提醒谁看</span>
+    <span style="width:40px;"></span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-bottom:56px;">
+    <div class="sel-search">🔍 搜索</div>
+    <div class="vis-import" onclick="void(0)">导入标签中的朋友</div>
+    <div class="sel-label">最近曾一起玩</div>
+    <div class="sel-smart">
+      <div class="sel-smart-list">
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=3"><div class="sc"></div><span class="sn">shynew</span></div>
+        <div class="sel-si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=8"><div class="sc"></div><span class="sn">kobe</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=11"><div class="sc"></div><span class="sn">2104倪好</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=15"><div class="sc"></div><span class="sn">杨涵凯</span></div>
+        <div class="sel-si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=20"><div class="sc"></div><span class="sn">长行</span></div>
+      </div>
+    </div>
+    <div class="sel-divider"></div>
+    <div class="sel-label">游戏社区好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=3"><span class="sr-name">shynew</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck on"></div><img src="https://i.pravatar.cc/80?img=8"><span class="sr-name">kobe</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=11"><span class="sr-name">2104倪好</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=15"><span class="sr-name">杨涵凯</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=20"><span class="sr-name">长行</span></div>
+    <div class="sel-label">微信好友</div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=25"><span class="sr-name">曾琪</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=30"><span class="sr-name">龚名志</span></div>
+    <div class="sel-row" onclick="togR(this)"><div class="sr-ck"></div><img src="https://i.pravatar.cc/80?img=32"><span class="sr-name">闵晨</span></div>
+  </div>
+  <div class="sel-bottom">
+    <div class="sb-avatars"><img src="https://i.pravatar.cc/64?img=3"><img src="https://i.pravatar.cc/64?img=8"></div>
+    <button class="sb-btn" onclick="go('p-compose')">完成(2)</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: 个人主页 ===== -->
+<div class="page" id="p-profile">
+  <div class="ios-status"><span class="t">12:07</span><span class="r">●●●● ⚡79%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-feed')" style="font-size:22px;">‹</span>
+    <span></span>
+    <span style="display:flex;gap:14px;align-items:center;">
+      <span style="position:relative;cursor:pointer;" onclick="go('p-messages')">🔔<span style="position:absolute;top:-5px;right:-7px;background:var(--red);color:#fff;font-size:9px;min-width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span></span>
+      <span style="cursor:pointer;">⚙️</span>
+      <span style="cursor:pointer;">•••</span>
+    </span>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="prof-top">
+      <div class="prof-row1">
+        <img src="https://i.pravatar.cc/104?img=47">
+        <div>
+          <div class="pr-name">Venus</div>
+          <div class="pr-tags">
+            <span class="pr-tag-g">已玩77小时</span>
+            <span class="pr-tag-y">3.4年玩家</span>
+            <span class="pr-tag-b">社区新星</span>
+          </div>
+        </div>
+      </div>
+      <div class="prof-sign">你还没有写签名哦～</div>
+      <div class="prof-stats">关注我 2 · 获得互动 3</div>
+      <div class="prof-btns">
+        <button class="pb pb-primary" onclick="go('p-compose')">+ 发表</button>
+        <button class="pb pb-outline">创作者中心</button>
+      </div>
+    </div>
+    <div class="prof-tabs">
+      <span class="pt active">帖子</span>
+      <span class="pt">在玩游戏</span>
+    </div>
+    <div class="prof-post">
+      <div style="font-size:15px;color:var(--gray1);line-height:1.5;">昨晚那把五杀翻盘太刺激了！<span style="color:var(--blue-link);">@shynew</span> <span style="color:var(--blue-link);">@kobe</span></div>
+      <div class="fi-game" style="margin-top:8px;margin-left:0;">
+        <img src="https://img.icons8.com/fluency/80/knight.png">
+        <div class="fg-info"><div class="fg-name">王者荣耀</div><div class="fg-tags"><span>角色</span><span>MOBA</span></div></div>
+      </div>
+      <div style="font-size:12px;color:var(--gray4);margin-top:8px;">王者荣耀圈 · 1小时前 · 指定可见</div>
+      <div style="display:flex;gap:16px;margin-top:6px;font-size:13px;color:var(--gray3);">
+        <span>👍 12</span><span>💬 5</span><span>↗ 分享</span>
+      </div>
+    </div>
+    <div class="prof-post">
+      <div style="font-size:15px;color:var(--gray1);">金蝉好强</div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:13px;color:var(--gray3);">
+        <span>👍 2</span><span>💬 1</span><span>↗ 分享</span>
+      </div>
+      <div style="font-size:12px;color:var(--gray4);margin-top:6px;">27分钟前 · 王者荣耀圈 · 16人看过</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: 消息 ===== -->
+<div class="page" id="p-messages">
+  <div class="ios-status"><span class="t">12:07</span><span class="r">●●●● ⚡79%</span></div>
+  <div class="cmp-nav">
+    <span class="cn-cancel" onclick="go('p-profile')" style="font-size:22px;">‹</span>
+    <span style="font-size:17px;font-weight:500;">消息</span>
+    <span style="width:40px;"></span>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="msg-group">
+      <div class="msg-item"><div class="mi-icon yel">💡</div><span class="mi-text">创作提醒</span><span class="mi-arr">›</span></div>
+      <div class="msg-item"><div class="mi-icon blu">🔔</div><span class="mi-text">订阅通知</span><span class="mi-arr">›</span></div>
+      <div class="msg-item"><div class="mi-icon grn">💬</div><span class="mi-text">聊天</span><span class="mi-arr">›</span></div>
+    </div>
+
+    <div class="msg-notif hl">
+      <img class="na" src="https://i.pravatar.cc/76?img=3">
+      <div class="nb"><div class="nm"><b>shynew</b> 在动态中提到了你</div><div class="ns">昨晚那把五杀翻盘太刺激了！@Venus... · 刚刚</div></div>
+      <img class="nt" src="https://img.icons8.com/fluency/84/knight.png">
+    </div>
+    <div class="msg-notif hl">
+      <img class="na" src="https://i.pravatar.cc/76?img=15">
+      <div class="nb"><div class="nm"><b>杨涵凯</b> 分享了一条动态给你</div><div class="ns">这个新英雄太强了出装思路看这里... · 3分钟前</div></div>
+      <img class="nt" src="https://img.icons8.com/fluency/84/sword.png">
+    </div>
+    <div class="msg-notif hl">
+      <img class="na" src="https://i.pravatar.cc/76?img=20">
+      <div class="nb"><div class="nm"><b>长行</b> 在评论中提到了你</div><div class="ns">@Venus 这个出装你觉得怎么样？ · 10分钟前</div></div>
+    </div>
+    <div class="msg-notif">
+      <img class="na" src="https://i.pravatar.cc/76?img=40">
+      <div class="nb"><div class="nm"><b>晓秦</b> 赞了你的动态</div><div class="ns">金蝉好强 · 1分钟前</div></div>
+    </div>
+    <div class="msg-notif">
+      <img class="na" src="https://i.pravatar.cc/76?img=42">
+      <div class="nb"><div class="nm"><b>超级叫喽</b> 赞了你的动态</div><div class="ns">金蝉好强 · 18分钟前</div></div>
+    </div>
+    <div class="msg-notif">
+      <img class="na" src="https://i.pravatar.cc/76?img=20">
+      <div class="nb"><div class="nm"><b>长行</b> 关注了你</div><div class="ns">5月13日</div></div>
+      <span class="nbtn">互相关注</span>
+    </div>
+    <div class="msg-notif">
+      <img class="na" src="https://i.pravatar.cc/76?img=44">
+      <div class="nb"><div class="nm"><b>低调记冷温暖</b> 关注了你</div><div class="ns">5月7日</div></div>
+      <span class="nbtn">互相关注</span>
+    </div>
+    <div class="msg-footer">仅保存 2024.2.20 以后的消息</div>
+  </div>
+</div>
+
+</div><!-- end device -->
+
+<div class="demo-dock">
+  <span onclick="go('p-feed')">朋友Tab</span>
+  <span onclick="go('p-compose')">发帖</span>
+  <span onclick="go('p-compose-kb')">键盘态</span>
+  <span onclick="go('p-visibility')">谁可以看</span>
+  <span onclick="go('p-sel-at')">艾特</span>
+  <span onclick="go('p-sel-remind')">提醒谁看</span>
+  <span onclick="go('p-sel-vis')">选朋友</span>
+  <span onclick="go('p-profile')">个人主页</span>
+  <span onclick="go('p-messages')">消息</span>
+</div>
+
+<script>
+function go(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');hideCommentBar();}
+function openSheet(){document.getElementById('bs-ol').classList.add('show');document.getElementById('bs-sh').classList.add('show');}
+function closeSheet(){document.getElementById('bs-ol').classList.remove('show');document.getElementById('bs-sh').classList.remove('show');}
+function togR(el){el.querySelector('.sr-ck').classList.toggle('on');}
+function toggleActionBar(){document.getElementById('action-bar').classList.toggle('show');}
+function showCommentBar(){document.getElementById('action-bar').classList.remove('show');document.getElementById('comment-bar').classList.add('show');document.getElementById('comment-input').focus();}
+function hideCommentBar(){document.getElementById('comment-bar').classList.remove('show');}
+</script>
+</body>
+</html>
