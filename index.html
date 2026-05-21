@@ -402,7 +402,10 @@ body {
   border-radius: 10px; border: 1px solid var(--gray5);
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   display: flex; align-items: center; gap: 10px;
+  transition: opacity 0.5s, transform 0.5s;
 }
+.invite-toast.fade-out { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+.invite-toast.hidden { display: none; }
 .invite-toast .it-content { flex: 1; }
 .invite-toast .it-title { font-size: 15px; font-weight: 500; color: var(--black); }
 .invite-toast .it-sub { font-size: 12px; color: var(--gray3); margin-top: 2px; }
@@ -423,6 +426,9 @@ body {
   margin-left: 4px;
 }
 .invite-toast .it-send svg { width: 14px; height: 14px; fill: #fff; }
+
+/* More menu */
+#pub-more-menu.show { display: block !important; }
 
 /* === Demo Nav === */
 .demo-dock {
@@ -832,7 +838,7 @@ body {
 
   <div class="feed-scroll">
     <!-- Toast: 发布成功+邀请引导 -->
-    <div class="invite-toast">
+    <div class="invite-toast" id="pub-toast">
       <div class="it-content">
         <div class="it-title">发布成功 🎉</div>
         <div class="it-sub">邀请好友来看，获得更多流量助推</div>
@@ -860,10 +866,27 @@ body {
             <div class="fg-info"><div class="fg-name">王者荣耀</div><div class="fg-tags"><span>角色</span><span>MOBA</span></div></div>
             <button class="fg-btn">立即玩</button>
           </div>
-          <div class="fi-time">刚刚</div>
+          <div style="display:flex;align-items:center;gap:20px;margin-top:10px;font-size:13px;color:var(--gray3);">
+            <span>👍 0</span>
+            <span>💬 0</span>
+            <span>↗ 分享</span>
+            <span style="margin-left:auto;position:relative;" id="pub-dots-wrap">
+              <span style="cursor:pointer;font-size:18px;letter-spacing:1px;" onclick="document.getElementById('pub-more-menu').classList.toggle('show')">••</span>
+              <div id="pub-more-menu" style="display:none;position:absolute;bottom:28px;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);border:1px solid var(--gray5);padding:6px 0;min-width:130px;z-index:20;">
+                <div style="padding:8px 14px;font-size:14px;color:var(--black);cursor:pointer;display:flex;align-items:center;gap:8px;" onclick="go('p-sel-remind')">
+                  <span style="font-size:16px;">📨</span> 邀请好友来看
+                </div>
+                <div style="padding:8px 14px;font-size:14px;color:var(--gray2);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:16px;">📌</span> 置顶帖子
+                </div>
+                <div style="padding:8px 14px;font-size:14px;color:var(--gray2);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:16px;">🗑️</span> 删除
+                </div>
+              </div>
+            </span>
+          </div>
         </div>
       </div>
-      <div class="fi-dots"></div>
     </div>
 
     <!-- 下面是正常的圈子推荐流 -->
@@ -1046,7 +1069,20 @@ body {
 </div>
 
 <script>
-function go(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');hideCommentBar();}
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  hideCommentBar();
+  // Toast auto-hide after 10s when entering published page
+  if(id==='p-published'){
+    var toast=document.getElementById('pub-toast');
+    if(toast){toast.classList.remove('fade-out','hidden');toast.style.opacity='1';toast.style.transform='none';}
+    clearTimeout(window._toastTimer);
+    window._toastTimer=setTimeout(function(){
+      if(toast){toast.classList.add('fade-out');setTimeout(function(){toast.classList.add('hidden');},500);}
+    },10000);
+  }
+}
 function openSheet(){document.getElementById('bs-ol').classList.add('show');document.getElementById('bs-sh').classList.add('show');}
 function closeSheet(){document.getElementById('bs-ol').classList.remove('show');document.getElementById('bs-sh').classList.remove('show');}
 function togR(el){el.querySelector('.sr-ck').classList.toggle('on');}
