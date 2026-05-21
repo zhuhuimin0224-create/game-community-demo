@@ -226,29 +226,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
   </div>
 </div>
 
-<!-- ===== 圈子Tab ===== -->
-<div class="page" id="p-circle">
+<!-- ===== 圈子Tab（异形卡场景） ===== -->
+<div class="page" id="p-highlight">
   <div class="st"><span>12:12</span><span class="r">●●●● ⚡79%</span></div>
   <div class="ttabs">
     <span class="bk">‹</span>
     <div class="list"><span class="t">朋友</span><span class="t on">圈子</span><span class="t">找游戏</span></div>
     <div class="rt"><span>🔍</span><span>👤</span></div>
   </div>
-
-  <!-- Toast (absolute, floats over content) -->
-  <div class="toast-wrap" id="toast-wrap">
-    <div class="toast">
-      <div class="tb"><div class="tt">发布成功 🎉</div><div class="ts">邀请好友来看，获得更多流量助推</div></div>
-      <div class="tr">
-        <img class="tav" src="https://i.pravatar.cc/56?img=45" onclick="this.classList.toggle('sel')">
-        <img class="tav" src="https://i.pravatar.cc/56?img=49" onclick="this.classList.toggle('sel')">
-        <div class="tplus" onclick="openSel('p-circle')">+</div>
-        <div class="tsend" onclick="toastInvite()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="scroll" style="padding-top:0;">
+  <div class="scroll">
     <!-- 异形卡：游戏高光 -->
     <div style="margin:12px 12px 0;padding:16px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:12px;color:#fff;position:relative;overflow:hidden;">
       <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,215,0,0.15);border-radius:50%;"></div>
@@ -267,11 +253,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
         </div>
       </div>
       <!-- 展开的邀请栏 -->
-      <div id="highlight-invite" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);display:none;align-items:center;gap:8px;">
+      <div id="highlight-invite" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);align-items:center;gap:8px;">
         <img src="https://i.pravatar.cc/40?img=45" style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);cursor:pointer;" onclick="this.style.borderColor=this.style.borderColor==='rgb(7, 201, 168)'?'rgba(255,255,255,0.3)':'rgb(7, 201, 168)'">
         <img src="https://i.pravatar.cc/40?img=49" style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);cursor:pointer;" onclick="this.style.borderColor=this.style.borderColor==='rgb(7, 201, 168)'?'rgba(255,255,255,0.3)':'rgb(7, 201, 168)'">
-        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,0.6);cursor:pointer;" onclick="openSel('p-circle')">+</div>
-        <div style="margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="hideHighlightInvite();showSuccess();">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,0.6);cursor:pointer;" onclick="openSel('p-highlight')">+</div>
+        <div style="margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="hideHighlightInvite();showSuccess2();">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         </div>
       </div>
@@ -301,6 +287,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
       </div>
     </div>
 
+    <!-- 推荐流 -->
+    <div class="post">
+      <div class="pu"><img src="https://i.pravatar.cc/72?img=22"><span class="pn">鼠雀之辈</span><span class="pb">喜要契约</span></div>
+      <div class="ptxt">想找个女搭子一起玩（想被带飞）<br><span class="at">#寻找我的洛搭子</span></div>
+      <img class="pimg" src="https://picsum.photos/350/180?random=10">
+      <div class="pmeta">原神行动记录 · 2小时前 · 35人看过</div>
+      <div class="pact"><span class="pa">👍 35</span><span class="pa">💬 14</span><span class="pa">↗ 3</span><span class="dots" onclick="openBS()">•••</span></div>
+    </div>
+    <div class="post">
+      <div class="pu"><img src="https://i.pravatar.cc/72?img=55"><span class="pn">凶不凶</span></div>
+      <div class="ptxt">我找了一个很凶的守卫帮我看菜园</div>
+      <img class="pimg" src="https://picsum.photos/350/180?random=11">
+      <div class="pmeta">洛克王国 · 世界圈 · 1小时前 · 12人看过</div>
+      <div class="pact"><span class="pa">👍 8</span><span class="pa">💬 3</span><span class="pa">↗ 1</span><span class="dots" onclick="openBS()">•••</span></div>
+    </div>
+    <div class="post">
+      <div class="pu"><img src="https://i.pravatar.cc/72?img=33"><span class="pn">鹿不正</span></div>
+      <div class="ptxt">金蝉最强出装教学<br>金蝉是峡谷里最克制李白的英雄！爆发连招3123...</div>
+      <div class="pmeta">王者荣耀圈 · 3小时前 · 89人看过</div>
+      <div class="pact"><span class="pa">👍 89</span><span class="pa">💬 23</span><span class="pa">↗ 7</span><span class="dots" onclick="openBS()">•••</span></div>
+    </div>
+    <div style="height:60px;"></div>
+  </div>
+  <!-- Success popup for highlight page -->
+  <div class="success-popup" id="suc-pop2">✓ 已邀请好友来看</div>
+</div>
+
+<!-- ===== 圈子Tab（发帖承接） ===== -->
+<div class="page" id="p-circle">
+  <div class="st"><span>12:12</span><span class="r">●●●● ⚡79%</span></div>
+  <div class="ttabs">
+    <span class="bk">‹</span>
+    <div class="list"><span class="t">朋友</span><span class="t on">圈子</span><span class="t">找游戏</span></div>
+    <div class="rt"><span>🔍</span><span>👤</span></div>
+  </div>
+
+  <!-- Toast (absolute, floats over content) -->
+  <div class="toast-wrap" id="toast-wrap">
+    <div class="toast">
+      <div class="tb"><div class="tt">发布成功 🎉</div><div class="ts">邀请好友来看，获得更多流量助推</div></div>
+      <div class="tr">
+        <img class="tav" src="https://i.pravatar.cc/56?img=45" onclick="this.classList.toggle('sel')">
+        <img class="tav" src="https://i.pravatar.cc/56?img=49" onclick="this.classList.toggle('sel')">
+        <div class="tplus" onclick="openSel('p-circle')">+</div>
+        <div class="tsend" onclick="toastInvite()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll" style="padding-top:0;">
     <!-- Posts container -->
     <div id="posts-container">
       <!-- New posts will be prepended here -->
@@ -373,7 +409,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
 <div class="dock">
   <span onclick="go('p-profile')">个人主页</span>
   <span onclick="go('p-compose')">发帖</span>
-  <span onclick="go('p-circle')">圈子页</span>
+  <span onclick="go('p-circle')">发帖承接</span>
+  <span onclick="go('p-highlight')">异形卡场景</span>
   <span onclick="go('p-sel')">选人页</span>
 </div>
 
@@ -425,6 +462,9 @@ function toastInvite(){
 function inviteFromSel(){
   if(selReturnTo==='p-compose'){
     go('p-compose');
+  } else if(selReturnTo==='p-highlight'){
+    go('p-highlight');
+    showSuccess2();
   } else {
     go('p-circle');
     showSuccess();
@@ -442,6 +482,11 @@ function closeBS(){document.getElementById('mask').classList.remove('show');docu
 function togCk(el){el.querySelector('.ck').classList.toggle('on');}
 function showHighlightInvite(){document.getElementById('highlight-invite').style.display='flex';}
 function hideHighlightInvite(){document.getElementById('highlight-invite').style.display='none';}
+function showSuccess2(){
+  var pop=document.getElementById('suc-pop2');
+  pop.classList.add('show');
+  setTimeout(function(){pop.classList.remove('show');},2000);
+}
 </script>
 </body>
 </html>
