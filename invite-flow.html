@@ -87,7 +87,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
 
 /* Toast - fixed position over content */
 .toast-wrap{position:absolute;top:88px;left:0;right:0;z-index:50;padding:0 12px;pointer-events:none;transition:opacity 0.4s,transform 0.4s;}
-.toast-wrap.hide{opacity:0;transform:translateY(-10px);}
+.toast-wrap.hide{opacity:0;transform:translateY(-10px);pointer-events:none;}
 .toast{background:#fff;border-radius:10px;border:1px solid var(--g5);box-shadow:0 2px 16px rgba(0,0,0,0.08);padding:12px 14px;display:flex;align-items:center;gap:10px;pointer-events:all;}
 .toast .tb{flex:1;}
 .toast .tb .tt{font-size:15px;font-weight:500;color:var(--black);}
@@ -250,7 +250,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
     </div>
   </div>
 
-  <div class="scroll" style="padding-top:76px;">
+  <div class="scroll" style="padding-top:0;">
     <!-- Posts container -->
     <div id="posts-container">
       <!-- New posts will be prepended here -->
