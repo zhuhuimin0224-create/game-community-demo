@@ -396,6 +396,34 @@ body {
 .modal .mb-cancel { background: var(--gray5); color: var(--gray2); }
 .modal .mb-save { background: var(--teal); color: #fff; }
 
+/* === Invite Toast === */
+.invite-toast {
+  margin: 10px 12px; padding: 12px 14px; background: #fff;
+  border-radius: 10px; border: 1px solid var(--gray5);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  display: flex; align-items: center; gap: 10px;
+}
+.invite-toast .it-content { flex: 1; }
+.invite-toast .it-title { font-size: 15px; font-weight: 500; color: var(--black); }
+.invite-toast .it-sub { font-size: 12px; color: var(--gray3); margin-top: 2px; }
+.invite-toast .it-actions { display: flex; align-items: center; gap: 6px; }
+.invite-toast .it-avatar {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px var(--gray5); cursor: pointer;
+}
+.invite-toast .it-avatar.selected { box-shadow: 0 0 0 2px var(--accent); }
+.invite-toast .it-add {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--gray5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff; cursor: pointer; font-weight: 300;
+}
+.invite-toast .it-send {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  margin-left: 4px;
+}
+.invite-toast .it-send svg { width: 14px; height: 14px; fill: #fff; }
+
 /* === Demo Nav === */
 .demo-dock {
   position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
@@ -550,7 +578,7 @@ body {
   <div class="cmp-nav">
     <span class="cn-cancel" onclick="go('p-feed')">取消</span>
     <span class="cn-circle" onclick="openSheet()">王者荣耀圈 <svg viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
-    <button class="cn-publish" onclick="go('p-feed')">发表</button>
+    <button class="cn-publish" onclick="go('p-published')">发表</button>
   </div>
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
     <div class="cmp-user">
@@ -785,6 +813,115 @@ body {
   </div>
 </div>
 
+<!-- ===== PAGE: 发布成功→圈子页（帖子置顶+邀请toast） ===== -->
+<div class="page" id="p-published">
+  <div class="ios-status"><span class="t">12:12</span><span class="r">●●●● ⚡79%</span></div>
+  <div class="feed-nav">
+    <span class="fn-back">‹</span>
+    <div class="fn-tabs">
+      <span class="fn-tab">朋友</span>
+      <span class="fn-tab active">圈子</span>
+      <span class="fn-tab">找游戏</span>
+    </div>
+    <span class="spacer" style="flex:1;"></span>
+    <div class="fn-right">
+      <svg class="fn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg class="fn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  </div>
+
+  <div class="feed-scroll">
+    <!-- Toast: 发布成功+邀请引导 -->
+    <div class="invite-toast">
+      <div class="it-content">
+        <div class="it-title">发布成功 🎉</div>
+        <div class="it-sub">邀请好友来看，获得更多流量助推</div>
+      </div>
+      <div class="it-actions">
+        <img class="it-avatar" src="https://i.pravatar.cc/56?img=45" onclick="this.classList.toggle('selected')">
+        <img class="it-avatar" src="https://i.pravatar.cc/56?img=49" onclick="this.classList.toggle('selected')">
+        <div class="it-add" onclick="go('p-sel-remind')">+</div>
+        <div class="it-send" onclick="this.parentElement.parentElement.style.background='#f0fdf9';this.parentElement.parentElement.querySelector('.it-title').textContent='已邀请 ✓';">
+          <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 置顶的刚发布帖子 -->
+    <div class="fi" style="background:#fafffe;border-left:3px solid var(--accent);">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=47">
+        <div class="fi-body">
+          <div class="fi-name">Venus</div>
+          <div class="fi-meta">刚刚 · <span class="game-tag">王者荣耀圈</span></div>
+          <div class="fi-text">昨晚那把五杀翻盘太刺激了！队友们冲冲冲 <span class="at">@shynew</span> <span class="at">@kobe</span></div>
+          <div class="fi-game">
+            <img src="https://img.icons8.com/fluency/96/knight.png">
+            <div class="fg-info"><div class="fg-name">王者荣耀</div><div class="fg-tags"><span>角色</span><span>MOBA</span></div></div>
+            <button class="fg-btn">立即玩</button>
+          </div>
+          <div class="fi-time">刚刚</div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <!-- 下面是正常的圈子推荐流 -->
+    <div class="fi">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=22">
+        <div class="fi-body">
+          <div class="fi-name">鼠雀之辈</div>
+          <div class="fi-meta"><span style="background:#f0f0f0;padding:1px 6px;border-radius:3px;font-size:11px;">👑 喜要契约</span> · 原神行动记录 · 已玩9小时 · 0.7年玩家</div>
+          <div class="fi-text">想找个女搭子一起玩（想被带飞）</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <img src="https://i.pravatar.cc/120?img=28" style="width:80px;height:80px;border-radius:6px;object-fit:cover;">
+            <img src="https://i.pravatar.cc/120?img=33" style="width:80px;height:80px;border-radius:6px;object-fit:cover;">
+            <img src="https://i.pravatar.cc/120?img=38" style="width:80px;height:80px;border-radius:6px;object-fit:cover;">
+          </div>
+          <div style="display:flex;gap:20px;margin-top:10px;font-size:13px;color:var(--gray3);">
+            <span>👍 35</span><span>💬 14</span><span>↗ 3</span>
+          </div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <div style="padding:14px 16px;font-size:14px;font-weight:500;color:var(--gray2);">为你推荐</div>
+    <div class="fi" style="padding:8px 16px;">
+      <div class="fi-game" style="margin-top:0;">
+        <img src="https://img.icons8.com/fluency/96/cherry.png">
+        <div class="fg-info"><div class="fg-name">果味大作战</div><div class="fg-tags">休闲水果海陆，包好玩</div></div>
+        <button class="fg-btn">立即玩</button>
+      </div>
+    </div>
+    <div class="fi" style="padding:8px 16px;">
+      <div class="fi-game" style="margin-top:0;">
+        <img src="https://img.icons8.com/fluency/96/bow.png">
+        <div class="fg-info"><div class="fg-name">一箭倾心游戏</div><div class="fg-tags">消除射头，轻松休闲</div></div>
+        <button class="fg-btn">立即玩</button>
+      </div>
+    </div>
+
+    <div class="fi">
+      <div class="fi-user">
+        <img src="https://i.pravatar.cc/76?img=55">
+        <div class="fi-body">
+          <div class="fi-name">鹿不正</div>
+          <div class="fi-meta"><span class="game-tag">🎮 王者荣耀</span> · 金蝉最强出装教学</div>
+          <div class="fi-text">金蝉是峡谷里最克制李白的英雄！爆发连招：3123，先开大强化技能再减伤...</div>
+          <div style="display:flex;gap:20px;margin-top:10px;font-size:13px;color:var(--gray3);">
+            <span>👍 89</span><span>💬 23</span><span>↗ 7</span>
+          </div>
+        </div>
+      </div>
+      <div class="fi-dots"></div>
+    </div>
+
+    <div style="height:60px;"></div>
+  </div>
+</div>
+
 <!-- ===== PAGE: 个人主页 ===== -->
 <div class="page" id="p-profile">
   <div class="ios-status"><span class="t">12:07</span><span class="r">●●●● ⚡79%</span></div>
@@ -898,6 +1035,7 @@ body {
 <div class="demo-dock">
   <span onclick="go('p-feed')">朋友Tab</span>
   <span onclick="go('p-compose')">发帖</span>
+  <span onclick="go('p-published')">发布成功</span>
   <span onclick="go('p-compose-kb')">键盘态</span>
   <span onclick="go('p-visibility')">谁可以看</span>
   <span onclick="go('p-sel-at')">艾特</span>
