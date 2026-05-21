@@ -186,24 +186,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
     <div class="ctools">
       <div class="ct"><span class="ci">#</span><span class="cl">话题</span><span class="ca">›</span></div>
       <div class="ct"><span class="ci">◇</span><span class="cl">投票</span><span class="ca">›</span></div>
-      <div class="ct" onclick="go('p-sel')"><span class="ci">📨</span><span class="cl">提醒谁看</span><span class="cavs"><img src="https://i.pravatar.cc/32?img=45"><img src="https://i.pravatar.cc/32?img=49"></span><span class="ca">›</span></div>
-      <div class="ct" onclick="go('p-sel')"><span class="ci">@</span><span class="cl">用户</span><span class="ca">›</span></div>
+      <div class="ct" onclick="openSel('p-compose')"><span class="ci">📨</span><span class="cl">提醒谁看</span><span class="cavs"><img src="https://i.pravatar.cc/32?img=45"><img src="https://i.pravatar.cc/32?img=49"></span><span class="ca">›</span></div>
+      <div class="ct" onclick="openSel('p-compose')"><span class="ci">@</span><span class="cl">用户</span><span class="ca">›</span></div>
       <div class="ct"><span class="ci">📝</span><span class="cl">写长图文</span></div>
     </div>
   </div>
 </div>
 
-<!-- ===== 选人页 ===== -->
+<!-- ===== 选人页（从toast/三点菜单进入，邀请后回圈子页） ===== -->
 <div class="page" id="p-sel">
   <div class="st"><span>12:09</span><span class="r">●●●● ⚡79%</span></div>
-  <div class="nav"><span class="bk" onclick="go('p-compose')">✕</span><span class="sp"></span><span style="font-size:17px;font-weight:500;position:absolute;left:50%;transform:translateX(-50%);">选择好友</span><span class="sp"></span></div>
+  <div class="nav"><span class="bk" onclick="go(selReturnTo)">✕</span><span class="sp"></span><span style="font-size:17px;font-weight:500;position:absolute;left:50%;transform:translateX(-50%);">邀请好友来看</span><span class="sp"></span></div>
   <div style="flex:1;overflow-y:auto;padding-bottom:56px;">
     <div class="sel-search">🔍 搜索</div>
+    <div class="sr" onclick="void(0)" style="border-bottom:0.5px solid var(--g5);justify-content:space-between;"><span class="sname">导入标签中的朋友</span><span style="color:var(--g4);font-size:16px;">›</span></div>
     <div class="sel-label">最近曾一起玩</div>
     <div class="sel-smart">
       <div class="sel-list">
-        <div class="si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=45"><div class="sc"></div><span class="sn">shynew</span></div>
-        <div class="si on" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=49"><div class="sc"></div><span class="sn">kobe</span></div>
+        <div class="si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=45"><div class="sc"></div><span class="sn">shynew</span></div>
+        <div class="si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=49"><div class="sc"></div><span class="sn">kobe</span></div>
         <div class="si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=11"><div class="sc"></div><span class="sn">2104倪好</span></div>
         <div class="si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=15"><div class="sc"></div><span class="sn">杨涵凯</span></div>
         <div class="si" onclick="this.classList.toggle('on')"><img src="https://i.pravatar.cc/92?img=20"><div class="sc"></div><span class="sn">长行</span></div>
@@ -211,18 +212,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
     </div>
     <div class="sel-div"></div>
     <div class="sel-label">游戏社区好友</div>
-    <div class="sr" onclick="togCk(this)"><div class="ck on"></div><img src="https://i.pravatar.cc/80?img=45"><span class="sname">shynew</span></div>
-    <div class="sr" onclick="togCk(this)"><div class="ck on"></div><img src="https://i.pravatar.cc/80?img=49"><span class="sname">kobe</span></div>
+    <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=45"><span class="sname">shynew</span></div>
+    <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=49"><span class="sname">kobe</span></div>
     <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=11"><span class="sname">2104倪好</span></div>
     <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=15"><span class="sname">杨涵凯</span></div>
     <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=20"><span class="sname">长行</span></div>
     <div class="sel-label">微信好友</div>
     <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=25"><span class="sname">曾琪</span></div>
     <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=30"><span class="sname">龚名志</span></div>
+    <div class="sr" onclick="togCk(this)"><div class="ck"></div><img src="https://i.pravatar.cc/80?img=32"><span class="sname">闵晨</span></div>
   </div>
   <div class="sel-bar">
-    <div class="savs"><img src="https://i.pravatar.cc/64?img=45"><img src="https://i.pravatar.cc/64?img=49"></div>
-    <button class="sbtn" onclick="inviteFromSel()">邀请(2)</button>
+    <div class="savs"></div>
+    <button class="sbtn" onclick="inviteFromSel()">邀请</button>
   </div>
 </div>
 
@@ -242,7 +244,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
       <div class="tr">
         <img class="tav" src="https://i.pravatar.cc/56?img=45" onclick="this.classList.toggle('sel')">
         <img class="tav" src="https://i.pravatar.cc/56?img=49" onclick="this.classList.toggle('sel')">
-        <div class="tplus" onclick="go('p-sel')">+</div>
+        <div class="tplus" onclick="openSel('p-circle')">+</div>
         <div class="tsend" onclick="toastInvite()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
       </div>
     </div>
@@ -304,7 +306,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
       <div class="bacts">
         <div class="bact"><div class="ai" style="background:#E8F8E8;">↗</div><div class="al">转发给朋友</div></div>
         <div class="bact"><div class="ai" style="background:#EBF5FB;">🌐</div><div class="al">分享至朋友圈</div></div>
-        <div class="bact" onclick="closeBS();go('p-sel')"><div class="ai" style="background:var(--teal-bg);">📨</div><div class="al">邀请好友来看</div></div>
+        <div class="bact" onclick="closeBS();openSel('p-circle')"><div class="ai" style="background:var(--teal-bg);">📨</div><div class="al">邀请好友来看</div></div>
       </div>
     </div>
     <div class="bsec">
@@ -327,15 +329,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
 
 <script>
 var toastTimer=null;
+var selReturnTo='p-circle';
 
 function go(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
+function openSel(returnTo){
+  selReturnTo=returnTo;
+  // Reset all checkboxes in selector
+  document.querySelectorAll('#p-sel .ck').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('#p-sel .si').forEach(s=>s.classList.remove('on'));
+  go('p-sel');
+}
+
 function publish(){
   var text=document.getElementById('inp').value.trim()||'昨晚那把五杀翻盘太刺激了！队友们冲冲冲';
-  // Create new post card
   var postHTML='<div class="post" style="border-left:3px solid var(--teal);background:#fafffe;">'+
     '<div class="pu"><img src="https://i.pravatar.cc/72?img=47"><span class="pn">Venus</span><span class="pb">3.4年玩家</span></div>'+
     '<div class="ptxt">'+text.replace(/\n/g,'<br>')+'</div>'+
@@ -343,9 +353,7 @@ function publish(){
     '<div class="pact"><span class="pa">👍 0</span><span class="pa">💬 0</span><span class="pa">↗ 0</span><span class="dots" onclick="openBS()">•••</span></div>'+
     '</div>';
   document.getElementById('posts-container').insertAdjacentHTML('afterbegin',postHTML);
-  // Reset input
   document.getElementById('inp').value='';
-  // Show circle page with toast
   go('p-circle');
   showToast();
 }
@@ -353,7 +361,6 @@ function publish(){
 function showToast(){
   var wrap=document.getElementById('toast-wrap');
   wrap.classList.remove('hide');
-  // Reset avatar selections
   wrap.querySelectorAll('.tav').forEach(a=>a.classList.remove('sel'));
   clearTimeout(toastTimer);
   toastTimer=setTimeout(function(){wrap.classList.add('hide');},10000);
@@ -366,10 +373,12 @@ function toastInvite(){
 }
 
 function inviteFromSel(){
-  go('p-circle');
-  var wrap=document.getElementById('toast-wrap');
-  wrap.classList.add('hide');
-  showSuccess();
+  if(selReturnTo==='p-compose'){
+    go('p-compose');
+  } else {
+    go('p-circle');
+    showSuccess();
+  }
 }
 
 function showSuccess(){
