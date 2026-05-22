@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>AI战报分享Demo</title>
+<style>
+:root{--teal:#07C9A8;--teal2:#06b498;--bg:#f5f5f5;--white:#fff;--text:#1a1a1a;--text2:#666;--text3:#999;--border:#e8e8e8;--card-r:12px;--blue:#576b95;--red:#FA5151;--orange:#FF9500;--gold:#FFD700;--dark:#1a1a1a;--dark2:#2a2a2a;--dark3:#333;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:#000;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px 0;}
+.device{width:375px;height:812px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;transition:transform 0.35s cubic-bezier(.4,0,.2,1),opacity 0.35s;background:var(--bg);}
+.page.hidden{transform:translateX(100%);opacity:0;pointer-events:none;}
+.page.left{transform:translateX(-30%);opacity:0.5;pointer-events:none;}
+
+/* Status bar */
+.status-bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:12px;font-weight:600;position:sticky;top:0;z-index:100;background:var(--white);}
+
+/* Nav bar */
+.nav{height:44px;display:flex;align-items:center;padding:0 16px;background:var(--white);border-bottom:0.5px solid var(--border);}
+.nav .back{font-size:20px;padding:8px;margin-left:-8px;cursor:pointer;}
+.nav .title{flex:1;text-align:center;font-size:17px;font-weight:600;margin-right:20px;}
+.nav .more{font-size:20px;padding:8px;margin-right:-8px;cursor:pointer;}
+
+/* Calendar */
+.calendar-bar{background:var(--white);padding:16px 16px 12px;}
+.calendar-month{font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px;}
+.calendar-days{display:flex;gap:0;}
+.calendar-day{flex:1;text-align:center;padding:6px 0;font-size:14px;color:var(--text2);cursor:pointer;border-radius:8px;transition:all 0.2s;}
+.calendar-day.active{color:var(--text);font-weight:700;position:relative;}
+.calendar-day.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:16px;height:2px;background:var(--teal);border-radius:1px;}
+.calendar-ai{padding:8px 16px;font-size:13px;color:var(--text3);background:var(--white);border-bottom:0.5px solid var(--border);}
+.calendar-ai span{color:var(--teal);font-weight:600;}
+
+/* Report sections */
+.report{padding:0 0 100px;}
+.section{background:var(--white);margin:8px 0;padding:20px 16px;position:relative;}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.section-icon{font-size:20px;}
+.section-title{font-size:16px;font-weight:700;color:var(--text);}
+.section-body{font-size:14px;color:var(--text);line-height:1.8;}
+.section-body .highlight{color:var(--teal);font-weight:600;}
+.section-body .data{color:var(--orange);font-weight:600;}
+.section-body .friend{color:var(--blue);font-weight:500;}
+
+/* Share nudge - the key innovation */
+.share-nudge{margin-top:14px;padding:10px 14px;background:linear-gradient(135deg,rgba(7,201,168,0.06),rgba(7,201,168,0.02));border:1px solid rgba(7,201,168,0.2);border-radius:10px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.2s;}
+.share-nudge:active{transform:scale(0.98);background:rgba(7,201,168,0.1);}
+.share-nudge .icon{width:32px;height:32px;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.share-nudge .txt{flex:1;}
+.share-nudge .txt .main{font-size:13px;color:var(--text);font-weight:500;}
+.share-nudge .txt .sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.share-nudge .arrow{font-size:16px;color:var(--text3);}
+
+/* Section share button (subtle) */
+.section-share{position:absolute;top:16px;right:16px;font-size:12px;color:var(--text3);padding:4px 10px;border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;}
+.section-share:active{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+/* Video thumbnail */
+.video-thumb{margin-top:12px;border-radius:8px;overflow:hidden;position:relative;background:#000;height:180px;display:flex;align-items:center;justify-content:center;}
+.video-thumb img{width:100%;height:100%;object-fit:cover;opacity:0.8;}
+.video-thumb .play{position:absolute;width:44px;height:44px;background:rgba(255,255,255,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.video-thumb .time{position:absolute;bottom:8px;right:8px;font-size:11px;color:#fff;background:rgba(0,0,0,0.6);padding:2px 6px;border-radius:4px;}
+
+/* Teammate card */
+.teammate-card{margin-top:12px;padding:12px;background:#f8f8f8;border-radius:10px;}
+.teammate-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.teammate-row:last-child{margin-bottom:0;}
+.teammate-avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;}
+.teammate-avatar img{width:100%;height:100%;}
+.teammate-info{flex:1;}
+.teammate-name{font-size:13px;font-weight:600;color:var(--text);}
+.teammate-stat{font-size:11px;color:var(--text3);}
+.teammate-tag{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:500;}
+.tag-carry{background:rgba(7,201,168,0.1);color:var(--teal);}
+.tag-blame{background:rgba(250,81,81,0.1);color:var(--red);}
+
+/* Bottom bar */
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;height:83px;background:var(--white);border-top:0.5px solid var(--border);display:flex;align-items:flex-start;padding-top:10px;justify-content:space-around;}
+.bar-btn{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text3);cursor:pointer;}
+.bar-btn .ico{font-size:20px;}
+.bar-btn:active{color:var(--teal);}
+
+/* ============ Page 2: Content Transform ============ */
+.transform-page{background:#f5f5f5;}
+.transform-header{background:var(--white);padding:16px;border-bottom:0.5px solid var(--border);}
+.transform-header h3{font-size:15px;font-weight:600;margin-bottom:4px;}
+.transform-header p{font-size:12px;color:var(--text3);}
+
+.template-picker{padding:16px;background:var(--white);margin-top:8px;}
+.template-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.templates{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;}
+.tpl{width:100px;flex-shrink:0;cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;transition:all 0.2s;}
+.tpl.active{border-color:var(--teal);}
+.tpl-preview{height:130px;position:relative;display:flex;align-items:center;justify-content:center;}
+.tpl-name{font-size:11px;text-align:center;padding:6px 0;color:var(--text2);}
+.tpl-dark .tpl-preview{background:linear-gradient(135deg,#1a1a2e,#16213e);}
+.tpl-game .tpl-preview{background:linear-gradient(135deg,#0d4e3f,#1a3a4a);}
+.tpl-fun .tpl-preview{background:linear-gradient(135deg,#2d1b69,#11998e);}
+.tpl-mini .tpl-preview{background:#fff;border:1px solid var(--border);}
+.tpl-preview .emoji{font-size:28px;}
+.tpl-preview .tpl-text{font-size:9px;color:rgba(255,255,255,0.7);position:absolute;bottom:8px;left:8px;right:8px;text-align:center;}
+.tpl-mini .tpl-preview .tpl-text{color:var(--text3);}
+
+/* Card preview */
+.card-preview{margin:16px;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+.card-dark{background:linear-gradient(160deg,#1a1a2e,#16213e);padding:24px 20px;color:#fff;}
+.card-dark .card-game{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;}
+.card-dark .card-title{font-size:18px;font-weight:700;margin-bottom:16px;line-height:1.4;}
+.card-dark .card-data{display:flex;gap:20px;margin-bottom:16px;}
+.card-dark .card-data .d-item{text-align:center;}
+.card-dark .card-data .d-val{font-size:24px;font-weight:800;color:var(--teal);}
+.card-dark .card-data .d-label{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;}
+.card-dark .card-quote{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;border-left:3px solid var(--teal);}
+.card-dark .card-footer{margin-top:16px;display:flex;align-items:center;justify-content:space-between;}
+.card-dark .card-user{display:flex;align-items:center;gap:8px;}
+.card-dark .card-user .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);}
+.card-dark .card-user .name{font-size:12px;color:rgba(255,255,255,0.8);}
+.card-dark .card-brand{font-size:10px;color:rgba(255,255,255,0.3);}
+
+/* Edit area */
+.edit-area{background:var(--white);margin-top:8px;padding:16px;}
+.edit-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.edit-text{width:100%;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:14px;line-height:1.6;color:var(--text);resize:none;min-height:80px;font-family:inherit;}
+.edit-text:focus{outline:none;border-color:var(--teal);}
+.edit-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.edit-tag{font-size:12px;padding:4px 10px;background:rgba(7,201,168,0.08);color:var(--teal);border-radius:12px;cursor:pointer;}
+.edit-tag.add{border:1px dashed var(--border);background:transparent;color:var(--text3);}
+
+/* Friend tag section */
+.friend-tag-section{background:var(--white);margin-top:8px;padding:16px;}
+.friend-tag-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+.friend-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f0f0;border-radius:16px;}
+.friend-chip img{width:20px;height:20px;border-radius:50%;}
+.friend-chip .name{font-size:12px;color:var(--text);}
+.friend-chip .remove{font-size:14px;color:var(--text3);cursor:pointer;}
+.friend-add-btn{padding:6px 12px;border:1px dashed var(--border);border-radius:16px;font-size:12px;color:var(--text3);cursor:pointer;}
+
+/* Publish button */
+.publish-bar{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 34px;background:var(--white);border-top:0.5px solid var(--border);display:flex;gap:10px;}
+.publish-bar .preview-btn{flex:1;height:44px;border-radius:22px;border:1px solid var(--teal);color:var(--teal);font-size:15px;font-weight:600;background:transparent;cursor:pointer;}
+.publish-bar .publish-btn{flex:2;height:44px;border-radius:22px;border:none;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;font-size:15px;font-weight:600;cursor:pointer;}
+
+/* ============ Page 3: Post Success ============ */
+.success-page{background:var(--bg);display:flex;flex-direction:column;}
+.success-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
+.success-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;}
+.success-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--text2);margin-bottom:32px;line-height:1.6;}
+.success-card{width:100%;background:var(--white);border-radius:12px;padding:16px;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,0.05);}
+.success-card .sc-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.invite-row{display:flex;align-items:center;gap:10px;}
+.invite-avatars{display:flex;}
+.invite-avatars .av{width:36px;height:36px;border-radius:50%;border:2px solid var(--white);margin-left:-8px;overflow:hidden;}
+.invite-avatars .av:first-child{margin-left:0;}
+.invite-avatars .av img{width:100%;height:100%;}
+.invite-avatars .av.add{background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3);}
+.invite-send{margin-left:auto;padding:8px 16px;background:var(--teal);color:#fff;border-radius:16px;font-size:13px;font-weight:500;cursor:pointer;}
+.invite-send:active{opacity:0.8;}
+.success-skip{margin-top:20px;font-size:13px;color:var(--text3);cursor:pointer;}
+
+/* ============ Page 4: Feed Preview ============ */
+.feed-preview{background:var(--bg);}
+.feed-card{background:var(--white);margin:8px 0;padding:16px;}
+.feed-user{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.feed-user .avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;}
+.feed-user .avatar img{width:100%;height:100%;}
+.feed-user .info{flex:1;}
+.feed-user .name{font-size:14px;font-weight:600;color:var(--text);}
+.feed-user .meta{font-size:11px;color:var(--text3);}
+.feed-text{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:12px;}
+.feed-image{border-radius:8px;overflow:hidden;margin-bottom:12px;}
+.feed-image .img-placeholder{height:200px;background:linear-gradient(160deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;}
+.feed-image .img-placeholder .big-data{font-size:36px;font-weight:800;color:var(--teal);}
+.feed-image .img-placeholder .small-text{font-size:12px;color:rgba(255,255,255,0.6);}
+.feed-actions{display:flex;gap:24px;padding-top:8px;border-top:0.5px solid var(--border);}
+.feed-actions .act{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px;}
+
+/* Animations */
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.animate-in{animation:slideUp 0.4s ease forwards;}
+.pulse{animation:pulse 2s infinite;}
+
+/* Bottom sheet */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.overlay.show{opacity:1;pointer-events:auto;}
+.bottom-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform 0.35s cubic-bezier(.4,0,.2,1);z-index:201;padding:20px 16px 34px;}
+.bottom-sheet.show{transform:translateY(0);}
+.sheet-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px;}
+.sheet-title{font-size:15px;font-weight:600;text-align:center;margin-bottom:16px;}
+.sheet-options{display:flex;flex-direction:column;gap:4px;}
+.sheet-opt{display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:10px;cursor:pointer;transition:background 0.2s;}
+.sheet-opt:active{background:#f5f5f5;}
+.sheet-opt .opt-icon{width:36px;height:36px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.sheet-opt .opt-text{flex:1;}
+.sheet-opt .opt-text .opt-main{font-size:14px;color:var(--text);font-weight:500;}
+.sheet-opt .opt-text .opt-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.sheet-opt .opt-badge{font-size:10px;padding:2px 6px;background:rgba(7,201,168,0.1);color:var(--teal);border-radius:8px;font-weight:500;}
+</style>
+</head>
+<body>
+<div class="device">
+
+<!-- ====== PAGE 1: AI战报 ====== -->
+<div class="page" id="p-report">
+  <div class="status-bar"><span>20:47</span><span>5G ▌▌▌</span></div>
+  <div class="nav">
+    <span class="back">‹</span>
+    <span class="title">和平精英游戏日历</span>
+    <span class="more">📅</span>
+  </div>
+
+  <div class="calendar-bar">
+    <div class="calendar-month">5月</div>
+    <div class="calendar-days">
+      <div class="calendar-day">19</div>
+      <div class="calendar-day">20</div>
+      <div class="calendar-day">21</div>
+      <div class="calendar-day active">22</div>
+    </div>
+  </div>
+  <div class="calendar-ai">由 <span>DeepSeek</span> 生成：</div>
+
+  <!-- Section: 高光时刻 -->
+  <div class="section">
+    <div class="section-share" onclick="showShareSheet()">分享</div>
+    <div class="section-header">
+      <span class="section-icon">🔥</span>
+      <span class="section-title">高光时刻：钢枪与运营的双重奏</span>
+    </div>
+    <div class="section-body">
+      今日四局双排鏖战，你在王牌段位的修罗场中展现了教科书级的运营智慧！首局P城东南侧<span class="data">1.9米</span>贴脸手枪反杀堪称「转角遇到爱」典范，R1895手枪<span class="data">50%命中率</span>的精准度让对手直呼内行。<br><br>第三局决赛圈极限1v2残血反打，ACE32突击步枪<span class="data">19米</span>腰射带走满编队成员的操作，完美诠释了「活着才有输出」的真谛！
+    </div>
+    <!-- This is the key innovation: contextual share nudge -->
+    <div class="share-nudge" onclick="goTransform('highlight')">
+      <div class="icon">🚀</div>
+      <div class="txt">
+        <div class="main">1v2残血反杀 — 发出去必火</div>
+        <div class="sub">一键生成高光分享卡，让好友膜拜</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- Section: 开黑复盘 -->
+  <div class="section">
+    <div class="section-share" onclick="showShareSheet()">分享</div>
+    <div class="section-header">
+      <span class="section-icon">🎮</span>
+      <span class="section-title">开黑复盘：塑料兄弟情の真相时刻</span>
+    </div>
+    <div class="section-body">
+      检测到你和两位微信好友组队四局，数据雷达显示：<br><br>
+      <span class="friend">@小王</span> 贡献值⭐⭐⭐<br>
+      • 3次关键击杀+2次极限救援<br>
+      • 第3局用DP-28轻机枪92米扫射灭队，堪称移动炮台<br>
+      • 但命中率19%堪比人体描边大师<br><br>
+      <span class="friend">@小李</span> 背锅值💣💣<br>
+      • 4局总伤害304，命中率<span class="data">8%</span>创历史新低<br>
+      • 成功用子弹给对手画了幅抽象画<br>
+      • 但第4局15米贴脸反杀，证明"菜鸡也有高光时刻"
+    </div>
+    <div class="teammate-card">
+      <div class="teammate-row">
+        <div class="teammate-avatar"><img src="https://i.pravatar.cc/60?img=12"></div>
+        <div class="teammate-info"><div class="teammate-name">小王</div><div class="teammate-stat">3次击杀 · 2次救援</div></div>
+        <span class="teammate-tag tag-carry">Carry</span>
+      </div>
+      <div class="teammate-row">
+        <div class="teammate-avatar"><img src="https://i.pravatar.cc/60?img=33"></div>
+        <div class="teammate-info"><div class="teammate-name">小李</div><div class="teammate-stat">命中率8% · 总伤害304</div></div>
+        <span class="teammate-tag tag-blame">背锅王</span>
+      </div>
+    </div>
+    <div class="share-nudge" onclick="goTransform('team')">
+      <div class="icon">👥</div>
+      <div class="txt">
+        <div class="main">发到圈子 @小王 @小李 让他们看看</div>
+        <div class="sub">生成开黑互动帖，队友收到通知</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- Section: 致命失误 -->
+  <div class="section">
+    <div class="section-share" onclick="showShareSheet()">分享</div>
+    <div class="section-header">
+      <span class="section-icon">💣</span>
+      <span class="section-title">致命失误全息投影</span>
+    </div>
+    <div class="section-body">
+      第4局5分21秒构成教科书级反面案例：<br><br>
+      <span class="data">❶</span> 在火焰村东侧无掩体平地"站桩输出"<br>
+      <span class="data">❷</span> 被69米外M416扫射时，居然试图用平底锅接子弹<br>
+      <span class="data">❸</span> 倒地后爬向岩石时，把队友的98K当掩体结果把自己卡住<br><br>
+      💡改进方案：中距离对枪时握住"拜佛枪法"
+    </div>
+  </div>
+
+  <!-- Section: 今日哲学 -->
+  <div class="section">
+    <div class="section-share" onclick="showShareSheet()">分享</div>
+    <div class="section-header">
+      <span class="section-icon">📜</span>
+      <span class="section-title">今日生存哲学</span>
+    </div>
+    <div class="section-body" style="font-style:italic;color:#555;">
+      "子弹画出的抛物线，是枪械与大地的爱恨情仇——当命中率变成艺术，生存本身就是胜利"
+    </div>
+    <div class="share-nudge" onclick="goTransform('quote')">
+      <div class="icon">✨</div>
+      <div class="txt">
+        <div class="main">这句话太有梗了 — 分享金句</div>
+        <div class="sub">生成文字卡片</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="bar-btn"><span class="ico">👍</span>点赞</div>
+    <div class="bar-btn" onclick="showShareSheet()"><span class="ico">↗</span>分享</div>
+    <div class="bar-btn"><span class="ico">💬</span>评论</div>
+  </div>
+</div>
+
+<!-- ====== PAGE 2: Content Transform ====== -->
+<div class="page hidden" id="p-transform">
+  <div class="status-bar"><span>20:48</span><span>5G ▌▌▌</span></div>
+  <div class="nav">
+    <span class="back" onclick="backToReport()">‹</span>
+    <span class="title">生成分享内容</span>
+    <span class="more"></span>
+  </div>
+
+  <div style="overflow-y:auto;height:calc(100% - 88px - 90px);">
+    <!-- Template picker -->
+    <div class="template-picker">
+      <div class="template-label">选择样式</div>
+      <div class="templates">
+        <div class="tpl tpl-dark active" onclick="selectTpl(this,'dark')">
+          <div class="tpl-preview"><span class="emoji">🌙</span><div class="tpl-text">深色数据卡</div></div>
+          <div class="tpl-name">高光海报</div>
+        </div>
+        <div class="tpl tpl-game" onclick="selectTpl(this,'game')">
+          <div class="tpl-preview"><span class="emoji">🎮</span><div class="tpl-text">游戏风格</div></div>
+          <div class="tpl-name">战绩卡</div>
+        </div>
+        <div class="tpl tpl-fun" onclick="selectTpl(this,'fun')">
+          <div class="tpl-preview"><span class="emoji">😂</span><div class="tpl-text">沙雕风格</div></div>
+          <div class="tpl-name">搞笑帖</div>
+        </div>
+        <div class="tpl tpl-mini" onclick="selectTpl(this,'mini')">
+          <div class="tpl-preview"><span class="emoji">📝</span><div class="tpl-text" style="color:#999">纯文字</div></div>
+          <div class="tpl-name">短文</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card preview -->
+    <div class="card-preview animate-in" id="card-preview">
+      <div class="card-dark">
+        <div class="card-game">和平精英 · 王牌段位 · 双排</div>
+        <div class="card-title">🔥 1v2残血反杀<br>ACE32腰射19米灭满编队</div>
+        <div class="card-data">
+          <div class="d-item"><div class="d-val">1v2</div><div class="d-label">决赛圈</div></div>
+          <div class="d-item"><div class="d-val">19m</div><div class="d-label">腰射距离</div></div>
+          <div class="d-item"><div class="d-val">50%</div><div class="d-label">手枪命中</div></div>
+        </div>
+        <div class="card-quote">首局转角1.9米贴脸反杀，第三局决赛圈1v2残血清队——活着才有输出。</div>
+        <div class="card-footer">
+          <div class="card-user"><div class="avatar"></div><div class="name">Venus</div></div>
+          <div class="card-brand">AI战报 · 微信游戏社区</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit caption -->
+    <div class="edit-area">
+      <div class="edit-label">配文（可编辑）</div>
+      <textarea class="edit-text" id="edit-caption">今天的1v2属实是把压枪拉满了，ACE32腰射yyds 🔥</textarea>
+      <div class="edit-tags">
+        <span class="edit-tag"># 和平精英</span>
+        <span class="edit-tag"># 高光时刻</span>
+        <span class="edit-tag"># 决赛圈</span>
+        <span class="edit-tag add">+ 添加话题</span>
+      </div>
+    </div>
+
+    <!-- Tag friends -->
+    <div class="friend-tag-section">
+      <div class="edit-label">邀请好友来看</div>
+      <div class="friend-tag-row">
+        <div class="friend-chip">
+          <img src="https://i.pravatar.cc/40?img=12">
+          <span class="name">小王</span>
+          <span class="remove">×</span>
+        </div>
+        <div class="friend-chip">
+          <img src="https://i.pravatar.cc/40?img=33">
+          <span class="name">小李</span>
+          <span class="remove">×</span>
+        </div>
+        <div class="friend-add-btn">+ 更多好友</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Publish bar -->
+  <div class="publish-bar">
+    <button class="preview-btn" onclick="showFeedPreview()">预览效果</button>
+    <button class="publish-btn" onclick="publishPost()">发布到社区</button>
+  </div>
+</div>
+
+<!-- ====== PAGE 3: Publish Success ====== -->
+<div class="page hidden" id="p-success">
+  <div class="status-bar"><span>20:48</span><span>5G ▌▌▌</span></div>
+  <div class="success-content">
+    <div class="success-icon">✓</div>
+    <div class="success-title">发布成功 🎉</div>
+    <div class="success-sub">高光战报已发布到和平精英圈<br>邀请队友来围观，获得更多曝光</div>
+    <div class="success-card">
+      <div class="sc-title">邀请一起玩的队友来看</div>
+      <div class="invite-row">
+        <div class="invite-avatars">
+          <div class="av"><img src="https://i.pravatar.cc/72?img=12"></div>
+          <div class="av"><img src="https://i.pravatar.cc/72?img=33"></div>
+          <div class="av add">+</div>
+        </div>
+        <div class="invite-send" onclick="sendInvite()">发送邀请 ✈</div>
+      </div>
+    </div>
+    <div class="success-skip" onclick="goFeed()">跳过，去看看帖子 ›</div>
+  </div>
+</div>
+
+<!-- ====== PAGE 4: Feed Preview ====== -->
+<div class="page hidden" id="p-feed">
+  <div class="status-bar"><span>20:49</span><span>5G ▌▌▌</span></div>
+  <div class="nav">
+    <span class="back" onclick="backToReport()">‹</span>
+    <span class="title">和平精英圈</span>
+    <span class="more">⋯</span>
+  </div>
+  <div class="feed-preview" style="padding-bottom:40px;">
+    <div class="feed-card">
+      <div class="feed-user">
+        <div class="avatar"><img src="https://i.pravatar.cc/80?img=47"></div>
+        <div class="info">
+          <div class="name">Venus</div>
+          <div class="meta">和平精英圈 · 刚刚 · 来自AI战报</div>
+        </div>
+      </div>
+      <div class="feed-text">今天的1v2属实是把压枪拉满了，ACE32腰射yyds 🔥<br><span style="color:#576b95">@小王 @小李</span> <span style="color:var(--teal)">#和平精英 #高光时刻</span></div>
+      <div class="feed-image">
+        <div class="img-placeholder">
+          <div class="small-text">和平精英 · 王牌段位 · 双排</div>
+          <div class="big-data">1v2</div>
+          <div class="small-text">决赛圈残血反杀 · ACE32腰射19米灭满编队</div>
+        </div>
+      </div>
+      <div class="feed-actions">
+        <span class="act">👍 赞</span>
+        <span class="act">💬 评论</span>
+        <span class="act">↗ 转发</span>
+      </div>
+    </div>
+    <div style="padding:20px;text-align:center;font-size:13px;color:var(--text3);">— 在社区Feed中的效果预览 —</div>
+  </div>
+</div>
+
+<!-- Bottom Sheet: Share Options -->
+<div class="overlay" id="overlay" onclick="hideShareSheet()"></div>
+<div class="bottom-sheet" id="shareSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">分享战报</div>
+  <div class="sheet-options">
+    <div class="sheet-opt" onclick="goTransform('highlight')">
+      <div class="opt-icon">🖼</div>
+      <div class="opt-text">
+        <div class="opt-main">生成分享卡片发到社区</div>
+        <div class="opt-sub">AI自动提取高光数据，一键生成海报</div>
+      </div>
+      <span class="opt-badge">推荐</span>
+    </div>
+    <div class="sheet-opt" onclick="goTransform('team')">
+      <div class="opt-icon">👥</div>
+      <div class="opt-text">
+        <div class="opt-main">生成开黑互动帖</div>
+        <div class="opt-sub">@队友，让他们看看自己的"精彩"表现</div>
+      </div>
+    </div>
+    <div class="sheet-opt">
+      <div class="opt-icon">↗</div>
+      <div class="opt-text">
+        <div class="opt-main">转发给朋友</div>
+        <div class="opt-sub">发送战报链接给微信好友</div>
+      </div>
+    </div>
+    <div class="sheet-opt">
+      <div class="opt-icon">⭕</div>
+      <div class="opt-text">
+        <div class="opt-main">分享到朋友圈</div>
+        <div class="opt-sub">生成长图分享</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>{
+    if(p.id===id){p.classList.remove('hidden','left');}
+    else{p.classList.add('hidden');}
+  });
+}
+
+function showShareSheet(){
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('shareSheet').classList.add('show');
+}
+function hideShareSheet(){
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('shareSheet').classList.remove('show');
+}
+
+function goTransform(type){
+  hideShareSheet();
+  setTimeout(()=>showPage('p-transform'),200);
+}
+
+function backToReport(){
+  showPage('p-report');
+}
+
+function selectTpl(el,type){
+  document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showFeedPreview(){
+  showPage('p-feed');
+}
+
+function publishPost(){
+  showPage('p-success');
+}
+
+function sendInvite(){
+  const btn=document.querySelector('.invite-send');
+  btn.textContent='已邀请 ✓';
+  btn.style.background='#ccc';
+  btn.style.color='#666';
+}
+
+function goFeed(){
+  showPage('p-feed');
+}
+</script>
+</body>
+</html>
