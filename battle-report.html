@@ -5,18 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>AI战报分享Demo</title>
 <style>
-:root{--teal:#07C9A8;--teal2:#06b498;--bg:#f5f5f5;--white:#fff;--text:#1a1a1a;--text2:#666;--text3:#999;--border:#e8e8e8;--card-r:12px;--blue:#576b95;--red:#FA5151;--orange:#FF9500;--gold:#FFD700;--dark:#1a1a1a;--dark2:#2a2a2a;--dark3:#333;}
+:root{--teal:#07C9A8;--teal2:#06b498;--bg:#f5f5f5;--white:#fff;--text:#1a1a1a;--text2:#666;--text3:#999;--border:#e8e8e8;--blue:#576b95;--red:#FA5151;--orange:#FF9500;--purple:#8B5CF6;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:#000;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px 0;}
 .device{width:375px;height:812px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
 .page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;transition:transform 0.35s cubic-bezier(.4,0,.2,1),opacity 0.35s;background:var(--bg);}
 .page.hidden{transform:translateX(100%);opacity:0;pointer-events:none;}
-.page.left{transform:translateX(-30%);opacity:0.5;pointer-events:none;}
 
 /* Status bar */
 .status-bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:12px;font-weight:600;position:sticky;top:0;z-index:100;background:var(--white);}
-
-/* Nav bar */
 .nav{height:44px;display:flex;align-items:center;padding:0 16px;background:var(--white);border-bottom:0.5px solid var(--border);}
 .nav .back{font-size:20px;padding:8px;margin-left:-8px;cursor:pointer;}
 .nav .title{flex:1;text-align:center;font-size:17px;font-weight:600;margin-right:20px;}
@@ -26,24 +23,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .calendar-bar{background:var(--white);padding:16px 16px 12px;}
 .calendar-month{font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px;}
 .calendar-days{display:flex;gap:0;}
-.calendar-day{flex:1;text-align:center;padding:6px 0;font-size:14px;color:var(--text2);cursor:pointer;border-radius:8px;transition:all 0.2s;}
-.calendar-day.active{color:var(--text);font-weight:700;position:relative;}
-.calendar-day.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:16px;height:2px;background:var(--teal);border-radius:1px;}
-.calendar-ai{padding:8px 16px;font-size:13px;color:var(--text3);background:var(--white);border-bottom:0.5px solid var(--border);}
+.calendar-day{flex:1;text-align:center;padding:8px 0;font-size:15px;color:var(--text3);cursor:pointer;border-radius:20px;transition:all 0.2s;}
+.calendar-day:active{background:#f0f0f0;}
+.calendar-day.active{color:var(--white);font-weight:700;background:var(--teal);}
+.calendar-ai{padding:10px 16px;font-size:13px;color:var(--text3);background:var(--white);border-bottom:0.5px solid var(--border);}
 .calendar-ai span{color:var(--teal);font-weight:600;}
 
-/* Report sections */
-.report{padding:0 0 100px;}
+/* Report content */
+.report-content{padding:0 0 40px;}
 .section{background:var(--white);margin:8px 0;padding:20px 16px;position:relative;}
 .section-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
 .section-icon{font-size:20px;}
 .section-title{font-size:16px;font-weight:700;color:var(--text);}
 .section-body{font-size:14px;color:var(--text);line-height:1.8;}
-.section-body .highlight{color:var(--teal);font-weight:600;}
 .section-body .data{color:var(--orange);font-weight:600;}
 .section-body .friend{color:var(--blue);font-weight:500;}
 
-/* Share nudge - the key innovation */
+/* Share nudge */
 .share-nudge{margin-top:14px;padding:10px 14px;background:linear-gradient(135deg,rgba(7,201,168,0.06),rgba(7,201,168,0.02));border:1px solid rgba(7,201,168,0.2);border-radius:10px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.2s;}
 .share-nudge:active{transform:scale(0.98);background:rgba(7,201,168,0.1);}
 .share-nudge .icon{width:32px;height:32px;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
@@ -51,16 +47,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .share-nudge .txt .main{font-size:13px;color:var(--text);font-weight:500;}
 .share-nudge .txt .sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .share-nudge .arrow{font-size:16px;color:var(--text3);}
-
-/* Section share button (subtle) */
-.section-share{position:absolute;top:16px;right:16px;font-size:12px;color:var(--text3);padding:4px 10px;border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;}
-.section-share:active{background:var(--teal);color:#fff;border-color:var(--teal);}
-
-/* Video thumbnail */
-.video-thumb{margin-top:12px;border-radius:8px;overflow:hidden;position:relative;background:#000;height:180px;display:flex;align-items:center;justify-content:center;}
-.video-thumb img{width:100%;height:100%;object-fit:cover;opacity:0.8;}
-.video-thumb .play{position:absolute;width:44px;height:44px;background:rgba(255,255,255,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.video-thumb .time{position:absolute;bottom:8px;right:8px;font-size:11px;color:#fff;background:rgba(0,0,0,0.6);padding:2px 6px;border-radius:4px;}
 
 /* Teammate card */
 .teammate-card{margin-top:12px;padding:12px;background:#f8f8f8;border-radius:10px;}
@@ -74,77 +60,98 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .teammate-tag{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:500;}
 .tag-carry{background:rgba(7,201,168,0.1);color:var(--teal);}
 .tag-blame{background:rgba(250,81,81,0.1);color:var(--red);}
+.tag-mvp{background:rgba(139,92,246,0.1);color:var(--purple);}
 
-/* Bottom bar */
-.bottom-bar{position:absolute;bottom:0;left:0;right:0;height:83px;background:var(--white);border-top:0.5px solid var(--border);display:flex;align-items:flex-start;padding-top:10px;justify-content:space-around;}
-.bar-btn{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text3);cursor:pointer;}
-.bar-btn .ico{font-size:20px;}
-.bar-btn:active{color:var(--teal);}
-
-/* ============ Page 2: Content Transform ============ */
-.transform-page{background:#f5f5f5;}
-.transform-header{background:var(--white);padding:16px;border-bottom:0.5px solid var(--border);}
-.transform-header h3{font-size:15px;font-weight:600;margin-bottom:4px;}
-.transform-header p{font-size:12px;color:var(--text3);}
-
-.template-picker{padding:16px;background:var(--white);margin-top:8px;}
+/* ============ Transform Page ============ */
+.template-picker{padding:16px;background:var(--white);margin-top:0;}
 .template-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;}
 .templates{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;}
-.tpl{width:100px;flex-shrink:0;cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;transition:all 0.2s;}
+.tpl{width:80px;flex-shrink:0;cursor:pointer;border-radius:10px;overflow:hidden;border:2.5px solid transparent;transition:all 0.2s;text-align:center;}
 .tpl.active{border-color:var(--teal);}
-.tpl-preview{height:130px;position:relative;display:flex;align-items:center;justify-content:center;}
-.tpl-name{font-size:11px;text-align:center;padding:6px 0;color:var(--text2);}
-.tpl-dark .tpl-preview{background:linear-gradient(135deg,#1a1a2e,#16213e);}
-.tpl-game .tpl-preview{background:linear-gradient(135deg,#0d4e3f,#1a3a4a);}
-.tpl-fun .tpl-preview{background:linear-gradient(135deg,#2d1b69,#11998e);}
-.tpl-mini .tpl-preview{background:#fff;border:1px solid var(--border);}
-.tpl-preview .emoji{font-size:28px;}
-.tpl-preview .tpl-text{font-size:9px;color:rgba(255,255,255,0.7);position:absolute;bottom:8px;left:8px;right:8px;text-align:center;}
-.tpl-mini .tpl-preview .tpl-text{color:var(--text3);}
+.tpl-preview{height:100px;position:relative;display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden;}
+.tpl-name{font-size:11px;padding:6px 0;color:var(--text2);white-space:nowrap;}
+.tpl.active .tpl-name{color:var(--teal);font-weight:600;}
+.tpl-preview .emoji{font-size:24px;}
+.tpl-preview .tpl-text{font-size:8px;color:rgba(255,255,255,0.7);position:absolute;bottom:6px;left:4px;right:4px;text-align:center;}
 
-/* Card preview */
-.card-preview{margin:16px;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
-.card-dark{background:linear-gradient(160deg,#1a1a2e,#16213e);padding:24px 20px;color:#fff;}
-.card-dark .card-game{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;}
-.card-dark .card-title{font-size:18px;font-weight:700;margin-bottom:16px;line-height:1.4;}
-.card-dark .card-data{display:flex;gap:20px;margin-bottom:16px;}
-.card-dark .card-data .d-item{text-align:center;}
-.card-dark .card-data .d-val{font-size:24px;font-weight:800;color:var(--teal);}
-.card-dark .card-data .d-label{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;}
-.card-dark .card-quote{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;border-left:3px solid var(--teal);}
-.card-dark .card-footer{margin-top:16px;display:flex;align-items:center;justify-content:space-between;}
-.card-dark .card-user{display:flex;align-items:center;gap:8px;}
-.card-dark .card-user .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);}
-.card-dark .card-user .name{font-size:12px;color:rgba(255,255,255,0.8);}
-.card-dark .card-brand{font-size:10px;color:rgba(255,255,255,0.3);}
+/* Card previews */
+.card-preview{margin:12px 16px;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.12);transition:all 0.3s;}
+
+/* Dark style */
+.card-style-dark{background:linear-gradient(160deg,#1a1a2e,#16213e);padding:22px 18px;color:#fff;}
+.card-style-dark .cg{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;}
+.card-style-dark .ct{font-size:17px;font-weight:700;margin-bottom:14px;line-height:1.4;}
+.card-style-dark .cd{display:flex;gap:16px;margin-bottom:14px;}
+.card-style-dark .cd .di{text-align:center;}
+.card-style-dark .cd .dv{font-size:22px;font-weight:800;color:var(--teal);}
+.card-style-dark .cd .dl{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.card-style-dark .cq{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;border-left:3px solid var(--teal);}
+.card-style-dark .cf{margin-top:14px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.3);}
+
+/* Game style */
+.card-style-game{background:linear-gradient(135deg,#0d3b2e,#1a3a4a);padding:22px 18px;color:#fff;border:1px solid rgba(7,201,168,0.3);}
+.card-style-game .cg{font-size:11px;color:var(--teal);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.card-style-game .ct{font-size:16px;font-weight:700;margin-bottom:14px;line-height:1.4;}
+.card-style-game .cd{display:flex;gap:12px;margin-bottom:14px;}
+.card-style-game .cd .di{background:rgba(7,201,168,0.1);border:1px solid rgba(7,201,168,0.2);border-radius:8px;padding:8px 12px;text-align:center;flex:1;}
+.card-style-game .cd .dv{font-size:20px;font-weight:800;color:var(--teal);}
+.card-style-game .cd .dl{font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.card-style-game .cf{margin-top:14px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.3);}
+
+/* Fun/meme style */
+.card-style-fun{background:#fff;padding:20px 18px;color:var(--text);border:2px solid var(--border);}
+.card-style-fun .cg{font-size:11px;color:var(--text3);margin-bottom:6px;}
+.card-style-fun .ct{font-size:20px;font-weight:800;margin-bottom:10px;line-height:1.3;}
+.card-style-fun .cb{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:12px;}
+.card-style-fun .ce{font-size:40px;text-align:center;margin:12px 0;}
+.card-style-fun .cf{margin-top:12px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text3);}
+
+/* Team/vote style */
+.card-style-team{background:var(--white);padding:20px 18px;color:var(--text);border:1px solid var(--border);}
+.card-style-team .cg{font-size:11px;color:var(--text3);margin-bottom:6px;}
+.card-style-team .ct{font-size:16px;font-weight:700;margin-bottom:14px;}
+.card-style-team .vote-q{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--text);}
+.card-style-team .vote-opts{}
+.card-style-team .vo{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8f8f8;border-radius:8px;margin-bottom:6px;}
+.card-style-team .vo img{width:28px;height:28px;border-radius:50%;}
+.card-style-team .vo .vn{flex:1;font-size:13px;font-weight:500;}
+.card-style-team .vo .vt{font-size:11px;color:var(--text3);}
+.card-style-team .cf{margin-top:14px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text3);}
+
+/* Quote style */
+.card-style-quote{background:linear-gradient(160deg,#1a1a2e,#2d1b4e);padding:30px 22px;color:#fff;text-align:center;}
+.card-style-quote .cg{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:16px;}
+.card-style-quote .qt{font-size:16px;font-weight:500;line-height:1.8;font-style:italic;color:rgba(255,255,255,0.9);}
+.card-style-quote .qa{margin-top:16px;font-size:12px;color:var(--teal);}
+.card-style-quote .cf{margin-top:20px;font-size:10px;color:rgba(255,255,255,0.3);}
 
 /* Edit area */
 .edit-area{background:var(--white);margin-top:8px;padding:16px;}
 .edit-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
-.edit-text{width:100%;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:14px;line-height:1.6;color:var(--text);resize:none;min-height:80px;font-family:inherit;}
+.edit-text{width:100%;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:14px;line-height:1.6;color:var(--text);resize:none;min-height:70px;font-family:inherit;}
 .edit-text:focus{outline:none;border-color:var(--teal);}
 .edit-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-.edit-tag{font-size:12px;padding:4px 10px;background:rgba(7,201,168,0.08);color:var(--teal);border-radius:12px;cursor:pointer;}
-.edit-tag.add{border:1px dashed var(--border);background:transparent;color:var(--text3);}
+.edit-tag{font-size:12px;padding:4px 10px;background:rgba(7,201,168,0.08);color:var(--teal);border-radius:12px;}
+.edit-tag.add{border:1px dashed var(--border);background:transparent;color:var(--text3);cursor:pointer;}
 
 /* Friend tag section */
 .friend-tag-section{background:var(--white);margin-top:8px;padding:16px;}
-.friend-tag-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
-.friend-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f0f0;border-radius:16px;}
+.friend-tag-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;}
+.friend-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;background:#f0f0f0;border-radius:14px;}
 .friend-chip img{width:20px;height:20px;border-radius:50%;}
 .friend-chip .name{font-size:12px;color:var(--text);}
 .friend-chip .remove{font-size:14px;color:var(--text3);cursor:pointer;}
-.friend-add-btn{padding:6px 12px;border:1px dashed var(--border);border-radius:16px;font-size:12px;color:var(--text3);cursor:pointer;}
+.friend-add-btn{padding:5px 10px;border:1px dashed var(--border);border-radius:14px;font-size:12px;color:var(--text3);cursor:pointer;}
 
-/* Publish button */
-.publish-bar{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 34px;background:var(--white);border-top:0.5px solid var(--border);display:flex;gap:10px;}
+/* Publish bar */
+.publish-bar{position:sticky;bottom:0;left:0;right:0;padding:12px 16px 34px;background:var(--white);border-top:0.5px solid var(--border);display:flex;gap:10px;}
 .publish-bar .preview-btn{flex:1;height:44px;border-radius:22px;border:1px solid var(--teal);color:var(--teal);font-size:15px;font-weight:600;background:transparent;cursor:pointer;}
 .publish-bar .publish-btn{flex:2;height:44px;border-radius:22px;border:none;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;font-size:15px;font-weight:600;cursor:pointer;}
+.publish-bar .publish-btn:active{opacity:0.85;}
 
-/* ============ Page 3: Post Success ============ */
-.success-page{background:var(--bg);display:flex;flex-direction:column;}
-.success-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
-.success-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;}
+/* ============ Success Page ============ */
+.success-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;min-height:calc(100vh - 88px);}
+.success-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;margin-bottom:20px;}
 .success-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;}
 .success-sub{font-size:14px;color:var(--text2);margin-bottom:32px;line-height:1.6;}
 .success-card{width:100%;background:var(--white);border-radius:12px;padding:16px;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,0.05);}
@@ -155,12 +162,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .invite-avatars .av:first-child{margin-left:0;}
 .invite-avatars .av img{width:100%;height:100%;}
 .invite-avatars .av.add{background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3);}
-.invite-send{margin-left:auto;padding:8px 16px;background:var(--teal);color:#fff;border-radius:16px;font-size:13px;font-weight:500;cursor:pointer;}
+.invite-send{margin-left:auto;padding:8px 16px;background:var(--teal);color:#fff;border-radius:16px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;}
 .invite-send:active{opacity:0.8;}
 .success-skip{margin-top:20px;font-size:13px;color:var(--text3);cursor:pointer;}
 
-/* ============ Page 4: Feed Preview ============ */
-.feed-preview{background:var(--bg);}
+/* ============ Feed Preview ============ */
 .feed-card{background:var(--white);margin:8px 0;padding:16px;}
 .feed-user{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .feed-user .avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;}
@@ -170,19 +176,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .feed-user .meta{font-size:11px;color:var(--text3);}
 .feed-text{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:12px;}
 .feed-image{border-radius:8px;overflow:hidden;margin-bottom:12px;}
-.feed-image .img-placeholder{height:200px;background:linear-gradient(160deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;}
-.feed-image .img-placeholder .big-data{font-size:36px;font-weight:800;color:var(--teal);}
-.feed-image .img-placeholder .small-text{font-size:12px;color:rgba(255,255,255,0.6);}
 .feed-actions{display:flex;gap:24px;padding-top:8px;border-top:0.5px solid var(--border);}
-.feed-actions .act{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px;}
+.feed-actions .act{font-size:12px;color:var(--text3);}
 
-/* Animations */
-@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.animate-in{animation:slideUp 0.4s ease forwards;}
-.pulse{animation:pulse 2s infinite;}
-
-/* Bottom sheet */
+/* Overlay & sheet */
 .overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .overlay.show{opacity:1;pointer-events:auto;}
 .bottom-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform 0.35s cubic-bezier(.4,0,.2,1);z-index:201;padding:20px 16px 34px;}
@@ -197,6 +194,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .sheet-opt .opt-text .opt-main{font-size:14px;color:var(--text);font-weight:500;}
 .sheet-opt .opt-text .opt-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .sheet-opt .opt-badge{font-size:10px;padding:2px 6px;background:rgba(7,201,168,0.1);color:var(--teal);border-radius:8px;font-weight:500;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn 0.35s ease forwards;}
 </style>
 </head>
 <body>
@@ -208,122 +208,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
   <div class="nav">
     <span class="back">‹</span>
     <span class="title">和平精英游戏日历</span>
-    <span class="more">📅</span>
+    <span class="more">⋯</span>
   </div>
-
   <div class="calendar-bar">
     <div class="calendar-month">5月</div>
     <div class="calendar-days">
-      <div class="calendar-day">19</div>
-      <div class="calendar-day">20</div>
-      <div class="calendar-day">21</div>
-      <div class="calendar-day active">22</div>
+      <div class="calendar-day" onclick="switchDay(20)">20</div>
+      <div class="calendar-day" onclick="switchDay(21)">21</div>
+      <div class="calendar-day active" onclick="switchDay(22)">22</div>
     </div>
   </div>
   <div class="calendar-ai">由 <span>DeepSeek</span> 生成：</div>
 
-  <!-- Section: 高光时刻 -->
-  <div class="section">
-    <div class="section-share" onclick="showShareSheet()">分享</div>
-    <div class="section-header">
-      <span class="section-icon">🔥</span>
-      <span class="section-title">高光时刻：钢枪与运营的双重奏</span>
-    </div>
-    <div class="section-body">
-      今日四局双排鏖战，你在王牌段位的修罗场中展现了教科书级的运营智慧！首局P城东南侧<span class="data">1.9米</span>贴脸手枪反杀堪称「转角遇到爱」典范，R1895手枪<span class="data">50%命中率</span>的精准度让对手直呼内行。<br><br>第三局决赛圈极限1v2残血反打，ACE32突击步枪<span class="data">19米</span>腰射带走满编队成员的操作，完美诠释了「活着才有输出」的真谛！
-    </div>
-    <!-- This is the key innovation: contextual share nudge -->
-    <div class="share-nudge" onclick="goTransform('highlight')">
-      <div class="icon">🚀</div>
-      <div class="txt">
-        <div class="main">1v2残血反杀 — 发出去必火</div>
-        <div class="sub">一键生成高光分享卡，让好友膜拜</div>
-      </div>
-      <span class="arrow">›</span>
-    </div>
-  </div>
-
-  <!-- Section: 开黑复盘 -->
-  <div class="section">
-    <div class="section-share" onclick="showShareSheet()">分享</div>
-    <div class="section-header">
-      <span class="section-icon">🎮</span>
-      <span class="section-title">开黑复盘：塑料兄弟情の真相时刻</span>
-    </div>
-    <div class="section-body">
-      检测到你和两位微信好友组队四局，数据雷达显示：<br><br>
-      <span class="friend">@小王</span> 贡献值⭐⭐⭐<br>
-      • 3次关键击杀+2次极限救援<br>
-      • 第3局用DP-28轻机枪92米扫射灭队，堪称移动炮台<br>
-      • 但命中率19%堪比人体描边大师<br><br>
-      <span class="friend">@小李</span> 背锅值💣💣<br>
-      • 4局总伤害304，命中率<span class="data">8%</span>创历史新低<br>
-      • 成功用子弹给对手画了幅抽象画<br>
-      • 但第4局15米贴脸反杀，证明"菜鸡也有高光时刻"
-    </div>
-    <div class="teammate-card">
-      <div class="teammate-row">
-        <div class="teammate-avatar"><img src="https://i.pravatar.cc/60?img=12"></div>
-        <div class="teammate-info"><div class="teammate-name">小王</div><div class="teammate-stat">3次击杀 · 2次救援</div></div>
-        <span class="teammate-tag tag-carry">Carry</span>
-      </div>
-      <div class="teammate-row">
-        <div class="teammate-avatar"><img src="https://i.pravatar.cc/60?img=33"></div>
-        <div class="teammate-info"><div class="teammate-name">小李</div><div class="teammate-stat">命中率8% · 总伤害304</div></div>
-        <span class="teammate-tag tag-blame">背锅王</span>
-      </div>
-    </div>
-    <div class="share-nudge" onclick="goTransform('team')">
-      <div class="icon">👥</div>
-      <div class="txt">
-        <div class="main">发到圈子 @小王 @小李 让他们看看</div>
-        <div class="sub">生成开黑互动帖，队友收到通知</div>
-      </div>
-      <span class="arrow">›</span>
-    </div>
-  </div>
-
-  <!-- Section: 致命失误 -->
-  <div class="section">
-    <div class="section-share" onclick="showShareSheet()">分享</div>
-    <div class="section-header">
-      <span class="section-icon">💣</span>
-      <span class="section-title">致命失误全息投影</span>
-    </div>
-    <div class="section-body">
-      第4局5分21秒构成教科书级反面案例：<br><br>
-      <span class="data">❶</span> 在火焰村东侧无掩体平地"站桩输出"<br>
-      <span class="data">❷</span> 被69米外M416扫射时，居然试图用平底锅接子弹<br>
-      <span class="data">❸</span> 倒地后爬向岩石时，把队友的98K当掩体结果把自己卡住<br><br>
-      💡改进方案：中距离对枪时握住"拜佛枪法"
-    </div>
-  </div>
-
-  <!-- Section: 今日哲学 -->
-  <div class="section">
-    <div class="section-share" onclick="showShareSheet()">分享</div>
-    <div class="section-header">
-      <span class="section-icon">📜</span>
-      <span class="section-title">今日生存哲学</span>
-    </div>
-    <div class="section-body" style="font-style:italic;color:#555;">
-      "子弹画出的抛物线，是枪械与大地的爱恨情仇——当命中率变成艺术，生存本身就是胜利"
-    </div>
-    <div class="share-nudge" onclick="goTransform('quote')">
-      <div class="icon">✨</div>
-      <div class="txt">
-        <div class="main">这句话太有梗了 — 分享金句</div>
-        <div class="sub">生成文字卡片</div>
-      </div>
-      <span class="arrow">›</span>
-    </div>
-  </div>
-
-  <!-- Bottom bar -->
-  <div class="bottom-bar">
-    <div class="bar-btn"><span class="ico">👍</span>点赞</div>
-    <div class="bar-btn" onclick="showShareSheet()"><span class="ico">↗</span>分享</div>
-    <div class="bar-btn"><span class="ico">💬</span>评论</div>
+  <div class="report-content" id="report-content">
+    <!-- Dynamic content loaded by JS -->
   </div>
 </div>
 
@@ -331,110 +229,55 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 <div class="page hidden" id="p-transform">
   <div class="status-bar"><span>20:48</span><span>5G ▌▌▌</span></div>
   <div class="nav">
-    <span class="back" onclick="backToReport()">‹</span>
+    <span class="back" onclick="showPage('p-report')">‹</span>
     <span class="title">生成分享内容</span>
     <span class="more"></span>
   </div>
-
-  <div style="overflow-y:auto;height:calc(100% - 88px - 90px);">
+  <div style="overflow-y:auto;height:calc(100% - 88px);" id="transform-scroll">
     <!-- Template picker -->
     <div class="template-picker">
       <div class="template-label">选择样式</div>
-      <div class="templates">
-        <div class="tpl tpl-dark active" onclick="selectTpl(this,'dark')">
-          <div class="tpl-preview"><span class="emoji">🌙</span><div class="tpl-text">深色数据卡</div></div>
-          <div class="tpl-name">高光海报</div>
-        </div>
-        <div class="tpl tpl-game" onclick="selectTpl(this,'game')">
-          <div class="tpl-preview"><span class="emoji">🎮</span><div class="tpl-text">游戏风格</div></div>
-          <div class="tpl-name">战绩卡</div>
-        </div>
-        <div class="tpl tpl-fun" onclick="selectTpl(this,'fun')">
-          <div class="tpl-preview"><span class="emoji">😂</span><div class="tpl-text">沙雕风格</div></div>
-          <div class="tpl-name">搞笑帖</div>
-        </div>
-        <div class="tpl tpl-mini" onclick="selectTpl(this,'mini')">
-          <div class="tpl-preview"><span class="emoji">📝</span><div class="tpl-text" style="color:#999">纯文字</div></div>
-          <div class="tpl-name">短文</div>
-        </div>
+      <div class="templates" id="tpl-list">
+        <!-- Filled by JS -->
       </div>
     </div>
-
-    <!-- Card preview -->
-    <div class="card-preview animate-in" id="card-preview">
-      <div class="card-dark">
-        <div class="card-game">和平精英 · 王牌段位 · 双排</div>
-        <div class="card-title">🔥 1v2残血反杀<br>ACE32腰射19米灭满编队</div>
-        <div class="card-data">
-          <div class="d-item"><div class="d-val">1v2</div><div class="d-label">决赛圈</div></div>
-          <div class="d-item"><div class="d-val">19m</div><div class="d-label">腰射距离</div></div>
-          <div class="d-item"><div class="d-val">50%</div><div class="d-label">手枪命中</div></div>
-        </div>
-        <div class="card-quote">首局转角1.9米贴脸反杀，第三局决赛圈1v2残血清队——活着才有输出。</div>
-        <div class="card-footer">
-          <div class="card-user"><div class="avatar"></div><div class="name">Venus</div></div>
-          <div class="card-brand">AI战报 · 微信游戏社区</div>
-        </div>
-      </div>
-    </div>
-
+    <!-- Card preview area -->
+    <div id="card-area"></div>
     <!-- Edit caption -->
     <div class="edit-area">
       <div class="edit-label">配文（可编辑）</div>
-      <textarea class="edit-text" id="edit-caption">今天的1v2属实是把压枪拉满了，ACE32腰射yyds 🔥</textarea>
-      <div class="edit-tags">
-        <span class="edit-tag"># 和平精英</span>
-        <span class="edit-tag"># 高光时刻</span>
-        <span class="edit-tag"># 决赛圈</span>
-        <span class="edit-tag add">+ 添加话题</span>
-      </div>
+      <textarea class="edit-text" id="edit-caption"></textarea>
+      <div class="edit-tags" id="edit-tags"></div>
     </div>
-
     <!-- Tag friends -->
-    <div class="friend-tag-section">
-      <div class="edit-label">邀请好友来看</div>
-      <div class="friend-tag-row">
-        <div class="friend-chip">
-          <img src="https://i.pravatar.cc/40?img=12">
-          <span class="name">小王</span>
-          <span class="remove">×</span>
-        </div>
-        <div class="friend-chip">
-          <img src="https://i.pravatar.cc/40?img=33">
-          <span class="name">小李</span>
-          <span class="remove">×</span>
-        </div>
-        <div class="friend-add-btn">+ 更多好友</div>
-      </div>
+    <div class="friend-tag-section" id="friend-section"></div>
+    <!-- Publish bar -->
+    <div class="publish-bar">
+      <button class="preview-btn" onclick="showPage('p-feed')">预览效果</button>
+      <button class="publish-btn" onclick="showPage('p-success')">发布到社区</button>
     </div>
-  </div>
-
-  <!-- Publish bar -->
-  <div class="publish-bar">
-    <button class="preview-btn" onclick="showFeedPreview()">预览效果</button>
-    <button class="publish-btn" onclick="publishPost()">发布到社区</button>
   </div>
 </div>
 
-<!-- ====== PAGE 3: Publish Success ====== -->
+<!-- ====== PAGE 3: Success ====== -->
 <div class="page hidden" id="p-success">
   <div class="status-bar"><span>20:48</span><span>5G ▌▌▌</span></div>
   <div class="success-content">
     <div class="success-icon">✓</div>
     <div class="success-title">发布成功 🎉</div>
-    <div class="success-sub">高光战报已发布到和平精英圈<br>邀请队友来围观，获得更多曝光</div>
+    <div class="success-sub" id="success-sub">高光战报已发布到和平精英圈<br>邀请队友来围观，获得更多曝光</div>
     <div class="success-card">
       <div class="sc-title">邀请一起玩的队友来看</div>
-      <div class="invite-row">
+      <div class="invite-row" id="invite-row">
         <div class="invite-avatars">
           <div class="av"><img src="https://i.pravatar.cc/72?img=12"></div>
           <div class="av"><img src="https://i.pravatar.cc/72?img=33"></div>
           <div class="av add">+</div>
         </div>
-        <div class="invite-send" onclick="sendInvite()">发送邀请 ✈</div>
+        <div class="invite-send" onclick="sendInvite(this)">发送邀请 ✈</div>
       </div>
     </div>
-    <div class="success-skip" onclick="goFeed()">跳过，去看看帖子 ›</div>
+    <div class="success-skip" onclick="showPage('p-feed')">跳过，去看看帖子 ›</div>
   </div>
 </div>
 
@@ -442,126 +285,286 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 <div class="page hidden" id="p-feed">
   <div class="status-bar"><span>20:49</span><span>5G ▌▌▌</span></div>
   <div class="nav">
-    <span class="back" onclick="backToReport()">‹</span>
+    <span class="back" onclick="showPage('p-report')">‹</span>
     <span class="title">和平精英圈</span>
     <span class="more">⋯</span>
   </div>
-  <div class="feed-preview" style="padding-bottom:40px;">
-    <div class="feed-card">
-      <div class="feed-user">
-        <div class="avatar"><img src="https://i.pravatar.cc/80?img=47"></div>
-        <div class="info">
-          <div class="name">Venus</div>
-          <div class="meta">和平精英圈 · 刚刚 · 来自AI战报</div>
-        </div>
-      </div>
-      <div class="feed-text">今天的1v2属实是把压枪拉满了，ACE32腰射yyds 🔥<br><span style="color:#576b95">@小王 @小李</span> <span style="color:var(--teal)">#和平精英 #高光时刻</span></div>
-      <div class="feed-image">
-        <div class="img-placeholder">
-          <div class="small-text">和平精英 · 王牌段位 · 双排</div>
-          <div class="big-data">1v2</div>
-          <div class="small-text">决赛圈残血反杀 · ACE32腰射19米灭满编队</div>
-        </div>
-      </div>
-      <div class="feed-actions">
-        <span class="act">👍 赞</span>
-        <span class="act">💬 评论</span>
-        <span class="act">↗ 转发</span>
-      </div>
-    </div>
-    <div style="padding:20px;text-align:center;font-size:13px;color:var(--text3);">— 在社区Feed中的效果预览 —</div>
-  </div>
+  <div id="feed-area" style="padding-bottom:40px;"></div>
+  <div style="padding:20px;text-align:center;font-size:13px;color:var(--text3);">— 在社区Feed中的效果预览 —</div>
 </div>
 
-<!-- Bottom Sheet: Share Options -->
-<div class="overlay" id="overlay" onclick="hideShareSheet()"></div>
-<div class="bottom-sheet" id="shareSheet">
+<!-- Bottom Sheet -->
+<div class="overlay" id="overlay" onclick="hideSheet()"></div>
+<div class="bottom-sheet" id="sheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-title">分享战报</div>
-  <div class="sheet-options">
-    <div class="sheet-opt" onclick="goTransform('highlight')">
-      <div class="opt-icon">🖼</div>
-      <div class="opt-text">
-        <div class="opt-main">生成分享卡片发到社区</div>
-        <div class="opt-sub">AI自动提取高光数据，一键生成海报</div>
-      </div>
-      <span class="opt-badge">推荐</span>
-    </div>
-    <div class="sheet-opt" onclick="goTransform('team')">
-      <div class="opt-icon">👥</div>
-      <div class="opt-text">
-        <div class="opt-main">生成开黑互动帖</div>
-        <div class="opt-sub">@队友，让他们看看自己的"精彩"表现</div>
-      </div>
-    </div>
-    <div class="sheet-opt">
-      <div class="opt-icon">↗</div>
-      <div class="opt-text">
-        <div class="opt-main">转发给朋友</div>
-        <div class="opt-sub">发送战报链接给微信好友</div>
-      </div>
-    </div>
-    <div class="sheet-opt">
-      <div class="opt-icon">⭕</div>
-      <div class="opt-text">
-        <div class="opt-main">分享到朋友圈</div>
-        <div class="opt-sub">生成长图分享</div>
-      </div>
-    </div>
-  </div>
+  <div class="sheet-title">分享战报内容</div>
+  <div class="sheet-options" id="sheet-opts"></div>
 </div>
 
 </div>
 
 <script>
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>{
-    if(p.id===id){p.classList.remove('hidden','left');}
-    else{p.classList.add('hidden');}
+// ====== Data for each day ======
+const days = {
+  22: {
+    sections: [
+      {
+        icon:'🔥', title:'高光时刻：钢枪与运营的双重奏',
+        body:`今日四局双排鏖战，你在王牌段位的修罗场中展现了教科书级的运营智慧！首局P城东南侧<span class="data">1.9米</span>贴脸手枪反杀堪称「转角遇到爱」典范，R1895手枪<span class="data">50%命中率</span>的精准度让对手直呼内行。<br><br>第三局决赛圈极限1v2残血反打，ACE32突击步枪<span class="data">19米</span>腰射带走满编队成员的操作，完美诠释了「活着才有输出」的真谛！`,
+        nudge:{icon:'🚀',main:'1v2残血反杀 — 发出去必火',sub:'一键生成高光分享卡，让好友膜拜',type:'highlight'}
+      },
+      {
+        icon:'📜', title:'今日生存哲学',
+        body:`<em style="color:#555">"子弹画出的抛物线，是枪械与大地的爱恨情仇——当命中率变成艺术，生存本身就是胜利"</em>`,
+        nudge:{icon:'✨',main:'这句话太有梗了 — 分享金句',sub:'生成文字卡片发到社区',type:'quote'}
+      }
+    ],
+    transform:{
+      type:'highlight',
+      templates:['dark','game','fun','text'],
+      defaultTpl:'dark',
+      caption:'今天的1v2属实是把压枪拉满了，ACE32腰射yyds 🔥',
+      tags:['# 和平精英','# 高光时刻','# 决赛圈'],
+      friends:[{name:'小王',img:'https://i.pravatar.cc/40?img=12'},{name:'小李',img:'https://i.pravatar.cc/40?img=33'}]
+    }
+  },
+  21: {
+    sections: [
+      {
+        icon:'🎮', title:'开黑复盘：相爱相杀实录',
+        body:`你和好友<span class="friend">水晶BOY3</span>上演了教科书级的"我救你你救我"循环剧！数据显示：<br><br>• <b>背锅王候选</b>：好友在农场西南侧用M416打出<span class="data">17%</span>命中率，成功用子弹给对手画了幅抽象派肖像 🎨<br><br>• <b>救世主时刻</b>：4分18秒你ACE32精准点射反杀蝎式手枪老六，好友4分43秒补枪时仿佛在给对手跳"爱的魔力转圈圈" 💃<br><br>• <b>战术建议</b>：决赛圈多次出现"双人逛街"行为，建议下次转移时采用"烟雾弹掩护+交叉火力"战术`,
+        teammates:[
+          {name:'水晶BOY3',img:'https://i.pravatar.cc/60?img=52',stat:'互救4次 · 命中率17%',tag:'难兄难弟',tagClass:'tag-blame'},
+          {name:'Venus（你）',img:'https://i.pravatar.cc/60?img=47',stat:'反杀2次 · ACE32精准点射',tag:'MVP',tagClass:'tag-mvp'}
+        ],
+        nudge:{icon:'👥',main:'发到圈子让水晶BOY3看看自己的表现',sub:'生成开黑互动帖，队友收到通知',type:'team'}
+      },
+      {
+        icon:'🔮', title:'明日运势',
+        body:`幸运方向：西南方圈运+99%<br>禁忌行为：给好友递震爆弹<br>玄学建议：把ID改成"别打我我是lyb"，系统会分配更憨的对手~ 🐍`,
+        nudge:null
+      }
+    ],
+    transform:{
+      type:'team',
+      templates:['team','fun','dark','text'],
+      defaultTpl:'team',
+      caption:'和 @水晶BOY3 的开黑日常，菜是真的菜，快乐也是真的快乐 😂',
+      tags:['# 和平精英','# 开黑日常','# 塑料兄弟情'],
+      friends:[{name:'水晶BOY3',img:'https://i.pravatar.cc/40?img=52'}]
+    }
+  },
+  20: {
+    sections: [
+      {
+        icon:'💣', title:'致命失误全息投影',
+        body:`经典战例：第6局22分03秒麦田伏击战<br><br><span class="data">❶</span> 21分15秒救援好友时未封烟，暴露在AMR狙击视野中<br><span class="data">❷</span> 救援被打断后，用PKM腰射对枪（命中率<span class="data">11.9%</span>）<br><span class="data">❸</span> 未利用吉普车作为掩体，站着当活靶子<br><br>💡改进方案：救援前先扔烟雾弹+卡毒边打药，对枪时蹲下+提前枪预判`,
+        nudge:{icon:'😂',main:'这波操作太离谱了 — 发出来自嘲',sub:'生成搞笑失误帖，评论区必炸',type:'fail'}
+      },
+      {
+        icon:'🔭', title:'上帝视角冷知识',
+        body:`从数据深扒发现这些隐藏细节：<br><br><span class="data">❶</span> <b>跳伞玄学</b>：三局跳农场/冰雪哈尔滨等热门区域，但存活率仅33%。建议学学顶尖选手对手60的"边缘发育流"<br><br><span class="data">❷</span> <b>死亡回放</b>：22分03秒被AMR狙击时，你正站在毫无掩体的麦田里当人体模特。安全区半径仅51米，建议提前用烟雾弹制造"人工掩体"<br><br><span class="data">❸</span> <b>物资悲论</b>：三局共捡到7把PKM轻机枪，但命中率仅12.6%。王牌段位建议主武器换M416+垂直握把，后坐力更友好`,
+        nudge:{icon:'🧠',main:'这些冷知识值得分享 — 发攻略帖',sub:'生成数据分析卡片',type:'insight'}
+      }
+    ],
+    transform:{
+      type:'fail',
+      templates:['fun','dark','game','text'],
+      defaultTpl:'fun',
+      caption:'命中率11.9%是什么概念？大概就是闭着眼打的水平吧 🤡 分享出来给大家乐乐',
+      tags:['# 和平精英','# 菜鸡日记','# 沙雕时刻'],
+      friends:[{name:'小王',img:'https://i.pravatar.cc/40?img=12'}]
+    }
+  }
+};
+
+// ====== Template card HTML generators ======
+const cardGenerators = {
+  dark: (day) => {
+    if(day===22) return `<div class="card-style-dark"><div class="cg">和平精英 · 王牌段位 · 双排</div><div class="ct">🔥 1v2残血反杀<br>ACE32腰射19米灭满编队</div><div class="cd"><div class="di"><div class="dv">1v2</div><div class="dl">决赛圈</div></div><div class="di"><div class="dv">19m</div><div class="dl">腰射距离</div></div><div class="di"><div class="dv">50%</div><div class="dl">手枪命中</div></div></div><div class="cq">首局转角1.9米贴脸反杀，第三局决赛圈1v2残血清队——活着才有输出。</div><div class="cf"><span>Venus · 5月22日</span><span>AI战报 · 微信游戏社区</span></div></div>`;
+    if(day===21) return `<div class="card-style-dark"><div class="cg">和平精英 · 双排开黑</div><div class="ct">🎮 开黑复盘<br>和水晶BOY3的相爱相杀</div><div class="cd"><div class="di"><div class="dv">4次</div><div class="dl">互相救援</div></div><div class="di"><div class="dv">17%</div><div class="dl">好友命中</div></div><div class="di"><div class="dv">2次</div><div class="dl">关键反杀</div></div></div><div class="cq">"我救你你救我"循环剧——他用子弹画画，我用ACE32收割。</div><div class="cf"><span>Venus · 5月21日</span><span>AI战报 · 微信游戏社区</span></div></div>`;
+    return `<div class="card-style-dark"><div class="cg">和平精英 · 淘汰3 · 第2名</div><div class="ct">💣 致命失误全息投影<br>命中率11.9%的腰射传奇</div><div class="cd"><div class="di"><div class="dv">11.9%</div><div class="dl">PKM命中</div></div><div class="di"><div class="dv">0次</div><div class="dl">封烟</div></div><div class="di"><div class="dv">51m</div><div class="dl">安全区</div></div></div><div class="cq">站在麦田当人体模特，试图用平底锅接子弹——生存哲学的反面教材。</div><div class="cf"><span>Venus · 5月20日</span><span>AI战报 · 微信游戏社区</span></div></div>`;
+  },
+  game: (day) => {
+    if(day===22) return `<div class="card-style-game"><div class="cg">⚡ HIGHLIGHT</div><div class="ct">决赛圈 1v2 残血反杀</div><div class="cd"><div class="di"><div class="dv">1v2</div><div class="dl">CLUTCH</div></div><div class="di"><div class="dv">19m</div><div class="dl">HIP FIRE</div></div><div class="di"><div class="dv">ACE32</div><div class="dl">WEAPON</div></div></div><div class="cf"><span>VENUS · ACE TIER</span><span>PUBGM AI REPORT</span></div></div>`;
+    if(day===21) return `<div class="card-style-game"><div class="cg">⚡ SQUAD REVIEW</div><div class="ct">双排互救循环赛</div><div class="cd"><div class="di"><div class="dv">4</div><div class="dl">REVIVES</div></div><div class="di"><div class="dv">17%</div><div class="dl">ACC</div></div><div class="di"><div class="dv">MVP</div><div class="dl">VENUS</div></div></div><div class="cf"><span>VENUS + 水晶BOY3</span><span>PUBGM AI REPORT</span></div></div>`;
+    return `<div class="card-style-game"><div class="cg">⚡ FAIL COMPILATION</div><div class="ct">麦田伏击战 · 教科书反面</div><div class="cd"><div class="di"><div class="dv">11.9%</div><div class="dl">ACC</div></div><div class="di"><div class="dv">PKM</div><div class="dl">WEAPON</div></div><div class="di"><div class="dv">#2</div><div class="dl">RANK</div></div></div><div class="cf"><span>VENUS · ACE TIER</span><span>PUBGM AI REPORT</span></div></div>`;
+  },
+  fun: (day) => {
+    if(day===22) return `<div class="card-style-fun"><div class="cg">和平精英 · 今日战报</div><div class="ct">「转角遇到爱」— 1.9米贴脸手枪反杀 🔫</div><div class="ce">🏆</div><div class="cb">R1895手枪50%命中率，对手直呼内行<br>ACE32腰射19米清队，活着才有输出</div><div class="cf"><span>Venus · 5月22日</span><span>来自AI战报</span></div></div>`;
+    if(day===21) return `<div class="card-style-fun"><div class="cg">和平精英 · 开黑日常</div><div class="ct">🎨 队友命中率17%<br>「成功给对手画了幅抽象画」</div><div class="ce">🤡</div><div class="cb">好友补枪时仿佛在给对手跳"爱的魔力转圈圈"<br>但4分18秒ACE32精准反杀蝎式手枪老六</div><div class="cf"><span>Venus + 水晶BOY3</span><span>来自AI战报</span></div></div>`;
+    return `<div class="card-style-fun"><div class="cg">和平精英 · 失误锦集</div><div class="ct">🍳 用平底锅接子弹の勇者</div><div class="ce">💀</div><div class="cb">站在麦田当人体模特 · PKM命中率11.9%<br>倒地后把队友98K当掩体，结果卡住了自己</div><div class="cf"><span>Venus · 5月20日</span><span>来自AI战报</span></div></div>`;
+  },
+  team: (day) => {
+    if(day===21) return `<div class="card-style-team"><div class="cg">和平精英 · 开黑互动帖</div><div class="ct">🎮 今日开黑复盘：相爱相杀实录</div><div class="vote-q">投票：这把谁carry的？</div><div class="vote-opts"><div class="vo"><img src="https://i.pravatar.cc/56?img=47"><div class="vn">Venus（我）</div><div class="vt">反杀2次</div></div><div class="vo"><img src="https://i.pravatar.cc/56?img=52"><div class="vn">水晶BOY3</div><div class="vt">互救4次</div></div><div class="vo"><img src="https://i.pravatar.cc/56?img=1"><div class="vn">对面太菜了</div><div class="vt">🤷</div></div></div><div class="cf"><span>Venus · 5月21日</span><span>AI战报 · 微信游戏社区</span></div></div>`;
+    if(day===22) return `<div class="card-style-team"><div class="cg">和平精英 · 开黑互动帖</div><div class="ct">🔥 今日双排战绩</div><div class="vote-q">你觉得哪个操作最秀？</div><div class="vote-opts"><div class="vo"><img src="https://i.pravatar.cc/56?img=47"><div class="vn">1.9米贴脸手枪反杀</div><div class="vt">R1895</div></div><div class="vo"><img src="https://i.pravatar.cc/56?img=47"><div class="vn">决赛圈1v2腰射清队</div><div class="vt">ACE32</div></div></div><div class="cf"><span>Venus · 5月22日</span><span>AI战报 · 微信游戏社区</span></div></div>`;
+    return `<div class="card-style-team"><div class="cg">和平精英 · 互动帖</div><div class="ct">💣 这波谁该背锅？</div><div class="vote-q">22分03秒麦田全军覆没，责任在谁？</div><div class="vote-opts"><div class="vo"><img src="https://i.pravatar.cc/56?img=47"><div class="vn">我（站着不动挨打）</div><div class="vt">命中11.9%</div></div><div class="vo"><img src="https://i.pravatar.cc/56?img=12"><div class="vn">队友（没给我封烟）</div><div class="vt">🤷</div></div><div class="vo"><img src="https://i.pravatar.cc/56?img=1"><div class="vn">地图（没有掩体）</div><div class="vt">😤</div></div></div><div class="cf"><span>Venus · 5月20日</span><span>AI战报 · 微信游戏社区</span></div></div>`;
+  },
+  quote: (day) => {
+    if(day===22) return `<div class="card-style-quote"><div class="cg">AI战报 · 今日生存哲学</div><div class="qt">"子弹画出的抛物线，是枪械与大地的爱恨情仇——当命中率变成艺术，生存本身就是胜利"</div><div class="qa">—— 和平精英AI战报 · Venus</div><div class="cf">5月22日 · 微信游戏社区</div></div>`;
+    if(day===21) return `<div class="card-style-quote"><div class="cg">AI战报 · 明日运势</div><div class="qt">"把ID改成'别打我我是lyb'，系统会分配更憨的对手~ 西南方圈运+99%"</div><div class="qa">—— 和平精英AI战报 · Venus</div><div class="cf">5月21日 · 微信游戏社区</div></div>`;
+    return `<div class="card-style-quote"><div class="cg">AI战报 · 上帝视角</div><div class="qt">"三局捡到7把PKM，命中率仅12.6%——当你的子弹学会了拐弯，距离就不再是障碍，而是艺术"</div><div class="qa">—— 和平精英AI战报 · Venus</div><div class="cf">5月20日 · 微信游戏社区</div></div>`;
+  },
+  text: (day) => {
+    return `<div style="padding:20px;background:#fff;border:1px solid var(--border);border-radius:12px;margin:0;"><div style="font-size:11px;color:var(--text3);margin-bottom:8px;">纯文字模式 · 无卡片</div><div style="font-size:14px;color:var(--text);line-height:1.7;">${days[day].transform.caption}</div></div>`;
+  }
+};
+
+const tplMeta = {
+  dark:{emoji:'🌙',name:'高光海报',bg:'linear-gradient(135deg,#1a1a2e,#16213e)'},
+  game:{emoji:'🎮',name:'战绩卡',bg:'linear-gradient(135deg,#0d4e3f,#1a3a4a)'},
+  fun:{emoji:'😂',name:'搞笑帖',bg:'linear-gradient(135deg,#2d1b69,#11998e)'},
+  team:{emoji:'👥',name:'互动帖',bg:'linear-gradient(135deg,#1a3a4a,#2d1b4e)'},
+  quote:{emoji:'✨',name:'金句卡',bg:'linear-gradient(160deg,#1a1a2e,#2d1b4e)'},
+  text:{emoji:'📝',name:'纯文字',bg:'#fff'}
+};
+
+let currentDay = 22;
+let currentTpl = 'dark';
+
+// ====== Render report for selected day ======
+function renderReport(day){
+  const d = days[day];
+  let html = '';
+  d.sections.forEach(s => {
+    html += `<div class="section fade-in">`;
+    html += `<div class="section-header"><span class="section-icon">${s.icon}</span><span class="section-title">${s.title}</span></div>`;
+    html += `<div class="section-body">${s.body}</div>`;
+    if(s.teammates){
+      html += `<div class="teammate-card">`;
+      s.teammates.forEach(t => {
+        html += `<div class="teammate-row"><div class="teammate-avatar"><img src="${t.img}"></div><div class="teammate-info"><div class="teammate-name">${t.name}</div><div class="teammate-stat">${t.stat}</div></div><span class="teammate-tag ${t.tagClass}">${t.tag}</span></div>`;
+      });
+      html += `</div>`;
+    }
+    if(s.nudge){
+      html += `<div class="share-nudge" onclick="goTransform('${s.nudge.type}')"><div class="icon">${s.nudge.icon}</div><div class="txt"><div class="main">${s.nudge.main}</div><div class="sub">${s.nudge.sub}</div></div><span class="arrow">›</span></div>`;
+    }
+    html += `</div>`;
   });
+  document.getElementById('report-content').innerHTML = html;
 }
 
-function showShareSheet(){
-  document.getElementById('overlay').classList.add('show');
-  document.getElementById('shareSheet').classList.add('show');
-}
-function hideShareSheet(){
-  document.getElementById('overlay').classList.remove('show');
-  document.getElementById('shareSheet').classList.remove('show');
+// ====== Switch day ======
+function switchDay(day){
+  currentDay = day;
+  document.querySelectorAll('.calendar-day').forEach(el=>{
+    el.classList.toggle('active', el.textContent.trim()==String(day));
+  });
+  renderReport(day);
 }
 
+// ====== Go to transform page ======
 function goTransform(type){
-  hideShareSheet();
-  setTimeout(()=>showPage('p-transform'),200);
+  hideSheet();
+  const d = days[currentDay].transform;
+  // Determine default template based on type
+  let defaultT = d.defaultTpl;
+  if(type==='quote') defaultT='quote';
+  if(type==='team') defaultT='team';
+  if(type==='highlight') defaultT='dark';
+  if(type==='fail') defaultT='fun';
+  if(type==='insight') defaultT='dark';
+  currentTpl = defaultT;
+
+  // Render template picker
+  const tpls = d.templates;
+  // Add quote if not present and type is quote
+  let allTpls = [...tpls];
+  if(type==='quote' && !allTpls.includes('quote')) allTpls = ['quote',...allTpls];
+  if(type==='team' && !allTpls.includes('team')) allTpls = ['team',...allTpls];
+
+  let tplHtml = '';
+  allTpls.forEach(t => {
+    const m = tplMeta[t];
+    const isActive = t===currentTpl?'active':'';
+    const bgStyle = t==='text'?'background:#fff;border:1px solid var(--border);':`background:${m.bg};`;
+    const textColor = t==='text'?'style="color:#999"':'';
+    tplHtml += `<div class="tpl ${isActive}" onclick="switchTpl('${t}')"><div class="tpl-preview" style="${bgStyle}"><span class="emoji">${m.emoji}</span><div class="tpl-text" ${textColor}>${m.name}</div></div><div class="tpl-name">${m.name}</div></div>`;
+  });
+  document.getElementById('tpl-list').innerHTML = tplHtml;
+
+  // Render card
+  renderCard(currentTpl);
+
+  // Caption & tags
+  document.getElementById('edit-caption').value = d.caption;
+  let tagHtml = d.tags.map(t=>`<span class="edit-tag">${t}</span>`).join('') + '<span class="edit-tag add">+ 添加话题</span>';
+  document.getElementById('edit-tags').innerHTML = tagHtml;
+
+  // Friends
+  let fHtml = '<div class="edit-label">邀请好友来看</div><div class="friend-tag-row">';
+  d.friends.forEach(f=>{
+    fHtml += `<div class="friend-chip"><img src="${f.img}"><span class="name">${f.name}</span><span class="remove">×</span></div>`;
+  });
+  fHtml += '<div class="friend-add-btn">+ 更多好友</div></div>';
+  document.getElementById('friend-section').innerHTML = fHtml;
+
+  setTimeout(()=>showPage('p-transform'),150);
 }
 
-function backToReport(){
-  showPage('p-report');
+function renderCard(tpl){
+  const gen = cardGenerators[tpl];
+  if(gen){
+    document.getElementById('card-area').innerHTML = `<div class="card-preview fade-in">${gen(currentDay)}</div>`;
+  }
 }
 
-function selectTpl(el,type){
-  document.querySelectorAll('.tpl').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+function switchTpl(tpl){
+  currentTpl = tpl;
+  document.querySelectorAll('.tpl').forEach(el=>el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderCard(tpl);
 }
 
-function showFeedPreview(){
-  showPage('p-feed');
+// ====== Feed preview ======
+function renderFeed(){
+  const d = days[currentDay].transform;
+  const cardHtml = cardGenerators[currentTpl]?cardGenerators[currentTpl](currentDay):'';
+  document.getElementById('feed-area').innerHTML = `
+    <div class="feed-card">
+      <div class="feed-user">
+        <div class="avatar"><img src="https://i.pravatar.cc/80?img=47"></div>
+        <div class="info"><div class="name">Venus</div><div class="meta">和平精英圈 · 刚刚 · 来自AI战报</div></div>
+      </div>
+      <div class="feed-text">${d.caption}<br><span style="color:#576b95">${d.friends.map(f=>'@'+f.name).join(' ')}</span> <span style="color:var(--teal)">${d.tags.join(' ')}</span></div>
+      <div class="feed-image" style="border-radius:12px;overflow:hidden;">${cardHtml}</div>
+      <div class="feed-actions"><span class="act">👍 赞</span><span class="act">💬 评论</span><span class="act">↗ 转发</span></div>
+    </div>`;
 }
 
-function publishPost(){
-  showPage('p-success');
+// ====== Navigation ======
+function showPage(id){
+  if(id==='p-feed') renderFeed();
+  document.querySelectorAll('.page').forEach(p=>{
+    if(p.id===id) p.classList.remove('hidden');
+    else p.classList.add('hidden');
+  });
+  // Reset invite button
+  if(id==='p-success'){
+    const btn = document.querySelector('.invite-send');
+    if(btn){btn.textContent='发送邀请 ✈';btn.style.background='';btn.style.color='';}
+  }
 }
 
-function sendInvite(){
-  const btn=document.querySelector('.invite-send');
+function sendInvite(btn){
   btn.textContent='已邀请 ✓';
-  btn.style.background='#ccc';
-  btn.style.color='#666';
+  btn.style.background='#e0e0e0';
+  btn.style.color='#999';
 }
 
-function goFeed(){
-  showPage('p-feed');
+// ====== Bottom sheet ======
+function showSheet(){
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
 }
+function hideSheet(){
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+}
+
+// ====== Init ======
+renderReport(22);
 </script>
 </body>
 </html>
