@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>AI战报分享 - 半屏浮层</title>
+<style>
+:root{--bg:#f5f5f5;--white:#fff;--text:#1a1a1a;--text2:#555;--text3:#999;--border:#e8e8e8;--teal:#07C9A8}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#000;display:flex;justify-content:center;min-height:100vh;padding:20px 0}
+.device{width:375px;height:812px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.page{position:absolute;inset:0;overflow-y:auto;background:var(--bg);z-index:1;padding-bottom:50px;scrollbar-width:none}
+.page::-webkit-scrollbar{display:none}
+.page.hidden{display:none}
+.sb{height:44px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;background:var(--white)}
+.nav{height:44px;display:flex;align-items:center;padding:0 16px;background:var(--white);border-bottom:0.5px solid var(--border)}
+.nav-back{font-size:22px;width:32px;cursor:pointer}
+.nav-title{flex:1;text-align:center;font-size:16px;font-weight:600}
+.nav-r{width:32px}
+
+/* Report */
+.rpt-ai{padding:10px 16px;font-size:12px;color:var(--text3);background:var(--white);border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:4px}
+.rpt-ai .ds-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;border:1px solid rgba(7,201,168,0.3);color:var(--teal);font-size:11px;font-weight:600}
+.sec{background:var(--white);margin:6px 0;padding:16px}
+.sec-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.sec-h .ttl{font-size:15px;font-weight:700}
+.sec-body{font-size:13px;line-height:1.8;color:var(--text2)}
+.sec-body .hl{color:#FF9500;font-weight:600}
+.sec-share{margin-top:14px;display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,rgba(7,201,168,0.04),rgba(7,201,168,0.01));border:1px solid rgba(7,201,168,0.12);border-radius:10px;cursor:pointer;transition:all 0.15s}
+.sec-share:active{background:rgba(7,201,168,0.1);transform:scale(0.98)}
+.sec-share .share-text{flex:1}
+.sec-share .share-main{font-size:12px;color:var(--text);font-weight:500}
+.sec-share .share-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.sec-share .share-btn{padding:6px 14px;border-radius:14px;background:var(--teal);color:#fff;font-size:11px;font-weight:500;white-space:nowrap;flex-shrink:0}
+
+/* ===== BOTTOM SHEET ===== */
+.ov{position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:100;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.ov.show{opacity:1;pointer-events:auto}
+.bs{position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:14px 14px 0 0;z-index:101;transform:translateY(100%);transition:transform 0.35s cubic-bezier(.4,0,.2,1);padding-bottom:40px;max-height:88vh;overflow-y:auto}
+.bs.show{transform:translateY(0)}
+.bs-handle{width:32px;height:4px;background:#ddd;border-radius:2px;margin:8px auto 0}
+
+/* Header: 取消 + 圈子名 + 发表 */
+.bs-hd{display:flex;align-items:center;padding:10px 16px}
+.bs-hd .cancel{font-size:14px;color:var(--text2);cursor:pointer;width:40px}
+.bs-hd .circle-name{flex:1;text-align:center;font-size:15px;font-weight:600;color:var(--text)}
+.bs-hd .circle-name .arrow{font-size:12px;color:var(--text3);margin-left:2px}
+.bs-hd .pub-btn{padding:6px 18px;border-radius:18px;background:var(--teal);color:#fff;font-size:14px;font-weight:500;border:none;cursor:pointer}
+.bs-hd .pub-btn:active{opacity:0.85}
+
+/* User identity - matching screenshot style */
+.bs-user{display:flex;align-items:center;padding:6px 16px 12px;gap:10px}
+.bs-user .u-av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0}
+.bs-user .u-av img{width:100%;height:100%}
+.bs-user .u-info{flex:1}
+.bs-user .u-name{font-size:14px;font-weight:600;color:var(--text)}
+.bs-user .u-tags{font-size:11px;color:var(--text3);margin-top:2px}
+.bs-user .u-change{display:inline-flex;align-items:center;gap:2px;cursor:pointer;margin-left:6px;color:var(--text3);font-size:11px}
+
+/* Content area */
+.bs-body{display:flex;gap:12px;padding:0 16px 12px;align-items:stretch}
+
+/* Poster - larger */
+.poster-wrap{width:170px;flex-shrink:0;border-radius:8px;overflow:hidden;position:relative}
+.poster-wrap img{width:100%;height:auto;display:block}
+
+/* Right panel */
+.right-panel{flex:1;display:flex;flex-direction:column}
+.tpl-label{font-size:11px;color:var(--text3);font-weight:500;padding:0 16px 6px}
+/* Template options - compact, multi-select checkboxes */
+.tpl-opts{display:flex;flex-direction:column;justify-content:space-between;flex:1}
+.tpl-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:var(--white)}
+.tpl-opt:active{transform:scale(0.97)}
+.tpl-opt.on{border-color:var(--teal);background:rgba(7,201,168,0.03)}
+.tpl-opt .chk{width:16px;height:16px;border-radius:3px;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;transition:all 0.15s}
+.tpl-opt.on .chk{background:var(--teal);border-color:var(--teal);color:#fff}
+.tpl-opt .opt-name{font-size:12px;color:var(--text2)}
+.tpl-opt.on .opt-name{color:var(--text);font-weight:500}
+
+/* Caption */
+.cap-area{padding:0 16px 10px}
+.cap-input{width:100%;height:38px;border:1px solid var(--border);border-radius:19px;padding:0 14px;font-size:13px;color:var(--text);outline:none;font-family:inherit;background:#fafafa}
+.cap-input:focus{border-color:var(--teal);background:var(--white)}
+.cap-input::placeholder{color:#bbb}
+
+/* Tools: 话题 + 投票 pills */
+.tools-row{display:flex;gap:10px;padding:0 16px 12px}
+.tool-pill{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:18px;border:1px solid var(--border);font-size:13px;color:var(--text2);cursor:pointer;background:var(--white)}
+.tool-pill:active{background:#f5f5f5}
+
+/* Selectable text mode */
+.sel-mode .sec-body{cursor:pointer}
+.sel-mode .sec-body .selectable{display:inline;padding:1px 2px;border-radius:3px;cursor:pointer;transition:background 0.15s}
+.sel-mode .sec-body .selectable:active{opacity:0.7}
+.sel-mode .sec-body .selectable.picked{background:rgba(7,201,168,0.15);color:var(--teal);font-weight:500}
+.sel-hint{padding:10px 16px;background:rgba(7,201,168,0.04);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--teal);text-align:center}
+.sel-toolbar{position:sticky;bottom:0;left:0;right:0;background:var(--white);border-top:0.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:10}
+.sel-count{font-size:12px;color:var(--text3);flex:1}
+.sel-count b{color:var(--teal)}
+.sel-done{padding:8px 20px;border-radius:18px;background:var(--teal);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer}
+.sel-done:active{opacity:0.85}
+
+/* Custom poster preview overlay */
+.custom-poster{position:relative;width:170px;flex-shrink:0;border-radius:8px;overflow:hidden}
+.custom-poster img{width:100%;height:auto;display:block}
+.custom-overlay{position:absolute;bottom:0;left:0;right:0;top:35%;padding:12px 12px 14px;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.4) 25%,rgba(0,0,0,0.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;gap:5px}
+.custom-overlay .co-line{font-size:10px;color:#fff;line-height:1.6;text-shadow:0 1px 3px rgba(0,0,0,0.9);font-weight:500;padding-left:8px;border-left:2px solid rgba(7,201,168,0.8)}
+.feed-tabs{display:flex;padding:8px 16px;background:var(--white);border-bottom:0.5px solid var(--border);gap:20px}
+.ft{font-size:14px;color:var(--text3);padding:4px 0;position:relative}
+.ft.on{color:var(--text);font-weight:600}
+.ft.on::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--teal);border-radius:1px}
+.circles{display:flex;gap:12px;padding:10px 16px;background:var(--white);overflow-x:auto}
+.cir{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.cir-i{width:44px;height:44px;border-radius:10px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3)}
+.cir-n{font-size:10px;color:var(--text3)}
+.fc{background:var(--white);margin-top:8px;padding:14px 16px 10px}
+.fc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.fc-av{width:36px;height:36px;border-radius:50%;overflow:hidden}
+.fc-av img{width:100%;height:100%}
+.fc-name{font-size:14px;font-weight:600}
+.fc-meta{font-size:11px;color:var(--text3)}
+.fc-meta .badge{background:rgba(7,201,168,0.1);color:var(--teal);padding:1px 5px;border-radius:3px;font-size:10px;margin-left:4px}
+.fc-text{font-size:14px;line-height:1.6;margin-bottom:10px}
+.fc-img{border-radius:4px;overflow:hidden;margin-bottom:10px;width:70%;position:relative;cursor:pointer}
+.fc-img img{width:100%;display:block;border-radius:4px}
+.fc-img .co-overlay,.fc-img-grid .co-overlay{position:absolute;bottom:0;left:0;right:0;top:35%;padding:10px 10px 12px;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.4) 25%,rgba(0,0,0,0.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+.fc-img .co-overlay .co-line,.fc-img-grid .co-overlay .co-line{font-size:9px;color:#fff;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,0.9);font-weight:500;padding-left:6px;border-left:2px solid rgba(7,201,168,0.8)}
+.fc-img-grid{display:grid;gap:4px;margin-bottom:10px;grid-template-columns:1fr 1fr 1fr;width:100%}
+.fc-img-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:4px;display:block;cursor:pointer}
+.fc-img-grid .grid-custom{position:relative;aspect-ratio:1/1;border-radius:4px;overflow:hidden;cursor:pointer}
+.fc-img-grid .grid-custom img{width:100%;height:100%;object-fit:cover}
+
+/* Image preview fullscreen */
+.img-preview{position:absolute;inset:0;background:rgba(0,0,0,0.95);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;cursor:pointer}
+.img-preview.show{opacity:1;pointer-events:auto}
+.img-preview img{max-width:90%;max-height:85%;object-fit:contain;border-radius:4px}
+.fc-actions{display:flex;padding-top:8px}
+.fc-act{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;color:var(--text3)}
+
+/* Success */
+.suc{position:absolute;inset:0;background:rgba(255,255,255,0.97);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.suc.show{opacity:1;pointer-events:auto}
+.suc-i{width:56px;height:56px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;margin-bottom:16px}
+.suc h2{font-size:18px;font-weight:600;margin-bottom:6px}
+.suc p{font-size:13px;color:var(--text3);margin-bottom:24px}
+.suc-btn{padding:10px 32px;border-radius:20px;background:var(--teal);color:#fff;font-size:14px;border:none;cursor:pointer}
+.suc-skip{margin-top:16px;font-size:13px;color:var(--text3);cursor:pointer}
+
+/* Bottom navigation bar */
+.demo-nav{position:absolute;bottom:0;left:0;right:0;height:50px;background:var(--white);border-top:0.5px solid var(--border);display:flex;align-items:center;z-index:90;padding:0 4px}
+.demo-nav .dn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:6px 0;border-radius:6px;transition:background 0.15s}
+.demo-nav .dn-item:active{background:#f0f0f0}
+.demo-nav .dn-item.on .dn-icon{color:var(--teal)}
+.demo-nav .dn-item.on .dn-label{color:var(--teal);font-weight:600}
+.demo-nav .dn-icon{font-size:16px;color:var(--text3);line-height:1}
+.demo-nav .dn-label{font-size:9px;color:var(--text3)}
+
+/* 圈子Tab feed page */
+.feed-top{display:flex;align-items:center;justify-content:center;padding:10px 16px;background:var(--white);position:relative}
+.feed-top .ft-tab{font-size:15px;color:var(--text3);margin:0 12px;cursor:pointer}
+.feed-top .ft-tab.on{color:var(--text);font-weight:700}
+.feed-top .ft-r{position:absolute;right:16px;display:flex;gap:16px;font-size:16px;color:var(--text3)}
+.circles-row{display:flex;gap:14px;padding:10px 16px;background:var(--white);border-bottom:0.5px solid var(--border);overflow-x:auto}
+.circles-row .cr-item{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;width:52px}
+.circles-row .cr-icon{width:42px;height:42px;border-radius:10px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);overflow:hidden}
+.circles-row .cr-name{font-size:10px;color:var(--text2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+.feed-card{background:var(--white);margin-top:8px;padding:14px 16px 10px}
+.feed-card .fcu{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.feed-card .fcu-av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0}
+.feed-card .fcu-av img{width:100%;height:100%}
+.feed-card .fcu-name{font-size:14px;font-weight:600;color:var(--text)}
+.feed-card .fcu-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);background:#f5f5f5;padding:2px 6px;border-radius:3px;margin-left:4px}
+.feed-card .fcu-meta{font-size:11px;color:var(--text3)}
+.feed-card .fcd-text{font-size:14px;line-height:1.6;color:var(--text);margin-bottom:10px}
+.feed-card .fcd-img{width:75%;border-radius:6px;overflow:hidden;margin-bottom:10px;position:relative;cursor:pointer}
+.feed-card .fcd-img img{width:100%;display:block}
+.feed-card .fcd-img .co-overlay{position:absolute;bottom:0;left:0;right:0;top:35%;padding:10px 10px 12px;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.4) 25%,rgba(0,0,0,0.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+.feed-card .fcd-img .co-overlay .co-line{font-size:9px;color:#fff;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,0.9);font-weight:500;padding-left:6px;border-left:2px solid rgba(7,201,168,0.8)}
+.feed-card .fcd-grid{display:grid;gap:4px;margin-bottom:10px;grid-template-columns:1fr 1fr 1fr;width:100%}
+.feed-card .fcd-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:4px;display:block;cursor:pointer}
+.feed-card .fcd-grid .grid-custom{position:relative;aspect-ratio:1/1;border-radius:4px;overflow:hidden;cursor:pointer}
+.feed-card .fcd-grid .grid-custom img{width:100%;height:100%;object-fit:cover}
+.feed-card .fcd-grid .co-overlay{position:absolute;bottom:0;left:0;right:0;top:35%;padding:8px 8px 10px;background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.4) 25%,rgba(0,0,0,0.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;gap:3px}
+.feed-card .fcd-grid .co-overlay .co-line{font-size:8px;color:#fff;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,0.9);font-weight:500;padding-left:5px;border-left:2px solid rgba(7,201,168,0.8)}
+.feed-card .fcd-acts{display:flex;padding-top:8px}
+.feed-card .fcd-act{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="device">
+
+<!-- PAGE: AI REPORT -->
+<div class="page" id="p-rpt">
+<div class="sb"><span>20:47</span><span>5G</span></div>
+<div class="nav"><span class="nav-back">&#8249;</span><span class="nav-title">和平精英游戏日历</span><span class="nav-r" style="font-size:14px">&#x22EF;</span></div>
+<!-- Calendar date row -->
+<div style="background:var(--white);padding:10px 16px 12px;border-bottom:0.5px solid var(--border)">
+  <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px">
+    <span style="font-size:24px;font-weight:700;color:var(--text)">5月</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:0">
+    <span style="flex:1;text-align:center;font-size:13px;color:var(--text3)">16</span>
+    <span style="flex:1;text-align:center;font-size:13px;color:var(--text3)">17</span>
+    <span style="flex:1;text-align:center;font-size:13px;color:var(--text3)">18</span>
+    <span style="flex:1;text-align:center;font-size:13px;color:var(--text3)">19</span>
+    <span style="flex:1;text-align:center;font-size:13px;color:var(--text3)">20</span>
+    <span style="flex:1;text-align:center;font-size:13px;color:var(--text3)">21</span>
+    <span style="flex:1;text-align:center;font-size:14px;font-weight:700;color:var(--text);position:relative">22<span style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:16px;height:2px;background:var(--teal);border-radius:1px"></span></span>
+  </div>
+</div>
+<div class="rpt-ai"><span>由</span><span class="ds-badge">DeepSeek</span><span>生成</span></div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F525; 高光时刻：伏地魔の艺术</span></div>
+  <div class="sec-body">今日三次冲进前10%的壮举，证明了你深谙「活着才有输出」的真谛！首局决赛圈极限救援队友+精准卡毒边进圈的操作，堪称教科书级运营。第三局S城巷战双杀灭队，AKM腰射压枪稳如老狗，子弹轨迹都带着「这人是伏地魔吧？」的调侃感~<br><br>首局P城<span class="hl">1.9米</span>贴脸手枪反杀，R1895命中率<span class="hl">50%</span>。第三局决赛圈1v2残血反打，ACE32<span class="hl">19米</span>腰射灭满编队。</div>
+  <div class="sec-share" onclick="openSheet('hl')"><div class="share-text"><div class="share-main">AI已为你生成专属配图，一键发表为帖子</div><div class="share-sub">这波操作值得让好友看看</div></div><span class="share-btn">去发表</span></div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F575;&#xFE0E; 上帝视角：数据解密</span></div>
+  <div class="sec-body">从三局跳伞轨迹发现你深谙「边缘发育」哲学，首局N港跳伞后精准避开刚枪区，用<span class="hl">28分39秒</span>生存时长证明「活着才有DPS」。但决赛圈研究所南侧遭遇战暴露关键问题：<br><br><b style="color:var(--text)">1. 移动轨迹分析</b><br>首局从N港&#8594;军事基地&#8594;渔村&#8594;研究所的转移路线，完美避开所有交火点。但23分32秒在研究所西侧被AMR狙击枪连续击倒3次，说明在开阔地带缺乏掩体意识。<br><br><b style="color:var(--text)">2. 物资悖论</b><br>三局平均拾取2.3把主武器却0击杀，像极了「移动军火库」。特别是第二局携带MG36轻机枪却全程未开火，建议下次把子弹分给队友（虽然队友命中率也惨淡）<br><br><b style="color:var(--text)">3. 毒圈预言家</b><br>第三局提前5分钟卡住R城西南侧制高点，这个决策吃鸡率提升<span class="hl">23%</span>。但27分36秒的狙击对决中，SVD射手步枪33.3%命中率 vs 对手AWM 100%命中率，暴露了中远距离对枪劣势。<br><br>跳伞选择火焰村/科学馆等中级资源区。第二局进出建筑<span class="hl">15次</span>创今日纪录。决赛圈缩圈前<span class="hl">30秒</span>完成转移。</div>
+  <div class="sec-share" onclick="openSheet('god')"><div class="share-text"><div class="share-main">AI已为你生成专属配图，一键发表为帖子</div><div class="share-sub">让好友看看你的运营思路有多细</div></div><span class="share-btn">去发表</span></div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F504; 失误链条拆解</span></div>
+  <div class="sec-body"><b style="color:var(--text)">致命时刻1</b>（首局19分40秒）<br>在研究所西侧无掩体平地被AMR狙击枪爆头，死亡链条：<br>未观察制高点&#8594;站立打药&#8594;未封烟&#8594;被预判走位<br><span style="color:var(--teal)">&#x1F4A1; 建议：打药前先丢烟雾弹，学会「蛇形走位」</span><br><br><b style="color:var(--text)">致命时刻2</b>（第三局27分36秒）<br>SVD对枪AWM的「望远镜对决」：<br>站立狙击&#8594;未计算子弹下坠&#8594;暴露位置&#8594;被反杀<br><span style="color:var(--teal)">&#x1F4A1; 建议：中远距离对枪时蹲姿+提前枪，学会「打一枪换棵树」</span><br><br>&#10122; 火焰村无掩体站桩输出<br>&#10123; 被69米外M416扫射时用平底锅接子弹<br>&#10124; 倒地后把队友98K当掩体卡住自己</div>
+  <div class="sec-share" onclick="openSheet('fail')"><div class="share-text"><div class="share-main">AI已为你生成专属配图，一键发表为帖子</div><div class="share-sub">发到圈子让大家乐一下</div></div><span class="share-btn">去发表</span></div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F3AE; 团队诊断：塑料兄弟情实录</span></div>
+  <div class="sec-body">好友M416命中率<span class="hl">17%</span>，成功用子弹画了幅抽象画。你ACE32精准反杀蝎式手枪老六。互救4次。<br><br>好友补枪仿佛在跳"爱的魔力转圈圈"，三局总计贡献了0.5个击杀（最后一颗子弹还是误伤队友）。但关键时刻的互救让这段塑料兄弟情有了一丝温度。</div>
+  <div class="sec-share" onclick="openSheet('team')"><div class="share-text"><div class="share-main">AI已为你生成专属配图，一键发表为帖子</div><div class="share-sub">发给你的队友也看看</div></div><span class="share-btn">去发表</span></div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F31F; 金句总结 &amp; 战场箴言</span></div>
+  <div class="sec-body" style="font-style:italic;color:#666">"伏地魔的终极境界，是让敌人以为草在动，其实是你的三级包在呼吸"<br>——来自《和平精英&#183;苟分圣经》第114章<br><br>"当命中率变成艺术，生存本身就是胜利"<br><br>当你在决赛圈被狙倒时，记住：<br>"每一颗射向你的子弹，都是战场在提醒你——该换握把了"</div>
+  <div style="margin-top:14px;padding-top:12px;border-top:0.5px dashed var(--border)">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">&#x1F52E; 明日运势</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text2)">&#x1F340; 幸运装备：垂直握把+3倍镜<br>&#x26A0;&#xFE0E; 避坑提示：远离研究所东南侧200米范围<br>&#x1F3AF; 玄学建议：开局跳伞前公屏发送「苟住我们能赢」，系统会分配更憨的对手</div>
+  </div>
+  <div class="sec-share" onclick="openSheet('quote')"><div class="share-text"><div class="share-main">AI已为你生成专属配图，一键发表为帖子</div><div class="share-sub">今日份战场感悟，值得留下</div></div><span class="share-btn">去发表</span></div>
+</div>
+
+<div style="padding:16px;font-size:11px;color:var(--text3);text-align:center;line-height:1.8">你可在 "个人页 > 在玩游戏 > 和平精英" 中找到AI战报<br>内容由AI生成，请谨慎参考</div>
+<div style="height:60px"></div>
+</div>
+
+<!-- PAGE: CUSTOM SELECT (tap to pick text from report) -->
+<div class="page hidden sel-mode" id="p-custom">
+<div class="sb"><span>20:47</span><span>5G</span></div>
+<div class="nav"><span class="nav-back" onclick="exitCustom()">&#8249;</span><span class="nav-title">选择战报内容</span><span class="nav-r"></span></div>
+<div class="sel-hint">点击你想放到海报上的文字</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F525; 高光时刻</span></div>
+  <div class="sec-body">
+    <span class="selectable" onclick="pickText(this)">今日三次冲进前10%的壮举，证明了你深谙「活着才有输出」的真谛</span><br>
+    <span class="selectable" onclick="pickText(this)">首局决赛圈极限救援队友+精准卡毒边进圈，堪称教科书级运营</span><br>
+    <span class="selectable" onclick="pickText(this)">第三局S城巷战双杀灭队，AKM腰射压枪稳如老狗</span><br>
+    <span class="selectable" onclick="pickText(this)">首局P城1.9米贴脸手枪反杀，R1895命中率50%</span><br>
+    <span class="selectable" onclick="pickText(this)">决赛圈1v2残血反打，ACE32 19米腰射灭满编队</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F575;&#xFE0E; 上帝视角</span></div>
+  <div class="sec-body">
+    <span class="selectable" onclick="pickText(this)">深谙「边缘发育」哲学，首局N港跳伞后精准避开刚枪区</span><br>
+    <span class="selectable" onclick="pickText(this)">用28分39秒生存时长证明「活着才有DPS」</span><br>
+    <span class="selectable" onclick="pickText(this)">三局平均拾取2.3把主武器却0击杀，像极了「移动军火库」</span><br>
+    <span class="selectable" onclick="pickText(this)">第三局提前5分钟卡住R城西南侧制高点，吃鸡率提升23%</span><br>
+    <span class="selectable" onclick="pickText(this)">跳伞选择火焰村/科学馆等中级资源区</span><br>
+    <span class="selectable" onclick="pickText(this)">第二局进出建筑15次创今日纪录</span><br>
+    <span class="selectable" onclick="pickText(this)">决赛圈缩圈前30秒完成转移</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F504; 失误链条</span></div>
+  <div class="sec-body">
+    <span class="selectable" onclick="pickText(this)">研究所西侧无掩体平地被AMR狙击枪爆头</span><br>
+    <span class="selectable" onclick="pickText(this)">未观察制高点→站立打药→未封烟→被预判走位</span><br>
+    <span class="selectable" onclick="pickText(this)">SVD对枪AWM的「望远镜对决」，暴露位置被反杀</span><br>
+    <span class="selectable" onclick="pickText(this)">火焰村无掩体站桩输出</span><br>
+    <span class="selectable" onclick="pickText(this)">被69米外M416扫射时用平底锅接子弹</span><br>
+    <span class="selectable" onclick="pickText(this)">倒地后把队友98K当掩体卡住自己</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F3AE; 团队诊断</span></div>
+  <div class="sec-body">
+    <span class="selectable" onclick="pickText(this)">好友M416命中率17%，成功用子弹画了幅抽象画</span><br>
+    <span class="selectable" onclick="pickText(this)">你ACE32精准反杀蝎式手枪老六</span><br>
+    <span class="selectable" onclick="pickText(this)">互救4次</span><br>
+    <span class="selectable" onclick="pickText(this)">好友补枪仿佛在跳"爱的魔力转圈圈"</span><br>
+    <span class="selectable" onclick="pickText(this)">三局总计贡献了0.5个击杀（最后一颗子弹还是误伤队友）</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F31F; 金句 &amp; 箴言</span></div>
+  <div class="sec-body">
+    <span class="selectable" onclick="pickText(this)">伏地魔的终极境界，是让敌人以为草在动，其实是你的三级包在呼吸</span><br>
+    <span class="selectable" onclick="pickText(this)">当命中率变成艺术，生存本身就是胜利</span><br>
+    <span class="selectable" onclick="pickText(this)">每一颗射向你的子弹，都是战场在提醒你——该换握把了</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-h"><span class="ttl">&#x1F52E; 明日运势</span></div>
+  <div class="sec-body">
+    <span class="selectable" onclick="pickText(this)">幸运装备：垂直握把+3倍镜</span><br>
+    <span class="selectable" onclick="pickText(this)">避坑提示：远离研究所东南侧200米范围</span><br>
+    <span class="selectable" onclick="pickText(this)">玄学建议：开局跳伞前公屏发送「苟住我们能赢」，系统会分配更憨的对手</span>
+  </div>
+</div>
+
+<div style="height:60px"></div>
+<div class="sel-toolbar">
+  <span class="sel-count">已选 <b id="pick-count">0</b> 条</span>
+  <button class="sel-done" onclick="doneCustom()">完成选择</button>
+</div>
+</div>
+
+<!-- PAGE: FEED (和平精英圈内 - 好友视角) -->
+<div class="page hidden" id="p-feed">
+<div class="sb" style="background:#5c4a3a;color:#fff"><span>14:44</span><span>5G</span></div>
+<!-- Game header -->
+<div style="background:linear-gradient(180deg,#5c4a3a,#4a3a2a);padding:10px 16px;display:flex;align-items:center;gap:10px">
+  <span style="font-size:20px;cursor:pointer;color:#fff" onclick="showP('p-rpt')">&#8249;</span>
+  <div style="width:36px;height:36px;border-radius:8px;background:#3a2a1a;display:flex;align-items:center;justify-content:center;font-size:10px;color:#d4a574">HP</div>
+  <div><div style="font-size:15px;font-weight:600;color:#fff">和平精英</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">157万人在线 ></div></div>
+</div>
+<!-- Icon row -->
+<div style="background:#4a3a2a;display:flex;justify-content:space-around;padding:10px 16px 12px">
+  <div style="text-align:center"><div style="width:36px;height:36px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:#d4a574">&#x798F;</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">福利</div></div>
+  <div style="text-align:center"><div style="width:36px;height:36px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:#d4a574">&#x53CB;</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">朋友</div></div>
+  <div style="text-align:center"><div style="width:36px;height:36px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:#d4a574">&#x6218;</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">战绩</div></div>
+  <div style="text-align:center"><div style="width:36px;height:36px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:#d4a574">&#x52A9;</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">互助专区</div></div>
+  <div style="text-align:center"><div style="width:36px;height:36px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:#d4a574">&#x5DE5;</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">工具箱</div></div>
+</div>
+<!-- Content tabs -->
+<div style="background:var(--white);display:flex;align-items:center;padding:10px 16px;gap:16px;border-bottom:0.5px solid var(--border);overflow-x:auto">
+  <span style="font-size:13px;color:var(--text3)">游戏介绍</span>
+  <span style="font-size:13px;color:var(--text3)">最热</span>
+  <span style="font-size:13px;color:var(--text);font-weight:600;border-bottom:2px solid var(--text);padding-bottom:2px">最新</span>
+  <span style="font-size:13px;color:var(--text3)">官方</span>
+  <span style="font-size:13px;color:var(--text3);white-space:nowrap">全新赛季重磅</span>
+  <span style="font-size:13px;color:var(--teal);white-space:nowrap;margin-left:auto">+ 发表</span>
+</div>
+<!-- My post (just published) -->
+<div class="fc">
+  <div class="fc-top"><div class="fc-av"><img src="https://i.pravatar.cc/72?img=47"></div><div><div class="fc-name">Venus</div><div class="fc-meta">四排 热血青铜IV &#183; 来自AI战报</div></div></div>
+  <div class="fc-text" id="fc-txt"></div>
+  <div id="fc-imgs"></div>
+  <div class="fc-actions"><div class="fc-act">&#x1F44D; 赞</div><div class="fc-act">&#x1F4AC; 评论</div><div class="fc-act">&#x2197;&#xFE0E; 分享</div></div>
+</div>
+<!-- Other posts -->
+<div class="fc">
+  <div class="fc-top"><div class="fc-av"><img src="https://i.pravatar.cc/72?img=22"></div><div><div class="fc-name">撒浪嘿</div><div class="fc-meta">佛系</div></div><span style="margin-left:auto;font-size:11px;color:var(--teal);border:1px solid var(--teal);padding:2px 8px;border-radius:4px">关注</span></div>
+  <div class="fc-text">我又有腻害的飞刀咯 敲稀饭</div>
+  <div style="width:70%;border-radius:4px;overflow:hidden;margin-bottom:10px"><div style="height:140px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:11px;color:#999">游戏截图</div></div>
+  <div class="fc-actions"><div class="fc-act">&#x1F44D; 1</div><div class="fc-act">&#x1F4AC; 2</div><div class="fc-act">&#x2197;&#xFE0E; 分享</div></div>
+</div>
+<div class="fc">
+  <div class="fc-top"><div class="fc-av"><img src="https://i.pravatar.cc/72?img=33"></div><div><div class="fc-name">阿姨压一血</div><div class="fc-meta">三排 星钻IV</div></div><span style="margin-left:auto;font-size:11px;color:var(--teal);border:1px solid var(--teal);padding:2px 8px;border-radius:4px">关注</span></div>
+  <div class="fc-text">今天遇到个神仙队友carry全场</div>
+  <div style="width:70%;border-radius:4px;overflow:hidden;margin-bottom:10px"><div style="height:140px;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#999">游戏截图</div></div>
+  <div class="fc-actions"><div class="fc-act">&#x1F44D; 5</div><div class="fc-act">&#x1F4AC; 3</div><div class="fc-act">&#x2197;&#xFE0E; 分享</div></div>
+</div>
+<div style="height:60px"></div>
+</div>
+
+<!-- PAGE: 圈子Tab页 - 朋友刷到的视角 -->
+<div class="page hidden" id="p-main-feed">
+<div class="sb"><span>20:12</span><span>5G</span></div>
+<!-- Top nav: 朋友 / 圈子 / 找游戏 -->
+<div class="feed-top">
+  <span class="ft-tab">朋友</span>
+  <span class="ft-tab on">圈子</span>
+  <span class="ft-tab">找游戏</span>
+  <div class="ft-r"><span>&#x1F50D;</span><span>&#x1F464;</span></div>
+</div>
+<!-- Game circles row -->
+<div class="circles-row">
+  <div class="cr-item"><div class="cr-icon" style="background:#fff3e0;color:#e65100;font-size:9px;font-weight:600">明日号<br>赢大奖</div><div class="cr-name">7亿小目标</div></div>
+  <div class="cr-item"><div class="cr-icon" style="background:#e8eaf6;color:#1a237e;font-weight:600">王者</div><div class="cr-name">王者荣耀</div></div>
+  <div class="cr-item"><div class="cr-icon" style="background:#e0f2f1;color:#00695c;font-weight:600">HP</div><div class="cr-name">和平精英</div></div>
+  <div class="cr-item"><div class="cr-icon" style="background:#fce4ec;color:#880e4f;font-weight:600">蛋仔</div><div class="cr-name">蛋糕快跑</div></div>
+  <div class="cr-item"><div class="cr-icon" style="background:#e3f2fd;color:#0d47a1;font-weight:600">S</div><div class="cr-name">steam游戏</div></div>
+  <div class="cr-item"><div class="cr-icon" style="background:#f5f5f5;font-size:14px">&#x2261;</div><div class="cr-name">全部圈子</div></div>
+</div>
+
+<!-- MY post (user's AI战报 appearing in friend's feed) -->
+<div class="feed-card" style="border-left:3px solid var(--teal)">
+  <div class="fcu">
+    <div class="fcu-av"><img src="https://i.pravatar.cc/72?img=47"></div>
+    <div>
+      <div><span class="fcu-name">Venus</span><span class="fcu-badge">&#x1F3AE; 和平精英圈</span></div>
+      <div class="fcu-meta">四排 热血青铜IV &#183; 来自AI战报</div>
+    </div>
+  </div>
+  <div class="fcd-text" id="mf-txt"></div>
+  <div id="mf-imgs"></div>
+  <div class="fcd-acts"><div class="fcd-act">&#x1F44D; 3</div><div class="fcd-act">&#x1F4AC; 2</div><div class="fcd-act">&#x2197;&#xFE0E; 分享</div></div>
+</div>
+
+<!-- Other posts -->
+<div class="feed-card">
+  <div class="fcu">
+    <div class="fcu-av"><img src="https://i.pravatar.cc/72?img=12"></div>
+    <div>
+      <div><span class="fcu-name">你好</span><span class="fcu-badge">&#x1F3AE; 游戏宝宝最棒</span></div>
+      <div class="fcu-meta">1.6年玩家</div>
+    </div>
+  </div>
+  <div class="fcd-text">来了老弟</div>
+  <div style="width:75%;border-radius:6px;overflow:hidden;margin-bottom:10px"><div style="height:130px;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;font-size:11px;color:#666">极速飘移游戏截图</div></div>
+  <div class="fcd-acts"><div class="fcd-act">&#x1F44D; 19</div><div class="fcd-act">&#x1F4AC; 1</div><div class="fcd-act">&#x2197;&#xFE0E; 分享</div></div>
+</div>
+
+<!-- Another post below -->
+<div class="feed-card">
+  <div class="fcu">
+    <div class="fcu-av"><img src="https://i.pravatar.cc/72?img=28"></div>
+    <div>
+      <div><span class="fcu-name">DNF小班</span><span class="fcu-badge">&#x1F3AE; DNF手游圈</span></div>
+      <div class="fcu-meta">勇士XI070 已玩932小时</div>
+    </div>
+  </div>
+  <div class="fcd-text">盖盖对不起，我不分了#dnf手游#DNF手游二周年庆</div>
+  <div style="width:75%;border-radius:6px;overflow:hidden;margin-bottom:10px"><div style="height:120px;background:#2a1a3a;display:flex;align-items:center;justify-content:center;font-size:11px;color:#666">DNF游戏截图</div></div>
+  <div class="fcd-acts"><div class="fcd-act">&#x1F44D; 58</div><div class="fcd-act">&#x1F4AC; 12</div><div class="fcd-act">&#x2197;&#xFE0E; 分享</div></div>
+</div>
+
+<!-- Another post -->
+<div class="feed-card">
+  <div class="fcu">
+    <div class="fcu-av"><img src="https://i.pravatar.cc/72?img=55"></div>
+    <div>
+      <div><span class="fcu-name">小雨雨</span><span class="fcu-badge">&#x1F3AE; 抓大鹅圈</span></div>
+      <div class="fcu-meta">10年玩家</div>
+    </div>
+  </div>
+  <div class="fcd-text">今天吃到了抓大鹅同款蘑菇</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;width:70%;margin-bottom:10px">
+    <div style="aspect-ratio:1/1;background:#f5e6d3;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999">图1</div>
+    <div style="aspect-ratio:1/1;background:#e8f5e9;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999">图2</div>
+  </div>
+  <div class="fcd-acts"><div class="fcd-act">&#x1F44D; 5737</div><div class="fcd-act">&#x1F4AC; 4360</div><div class="fcd-act">&#x2197;&#xFE0E; 61</div></div>
+</div>
+<div style="height:60px"></div>
+</div>
+
+<!-- BOTTOM SHEET -->
+<div class="ov" id="ov" onclick="closeSheet()"></div>
+<div class="bs" id="bs">
+  <div class="bs-handle"></div>
+
+  <!-- Header -->
+  <div class="bs-hd">
+    <span class="cancel" onclick="closeSheet()">取消</span>
+    <span class="circle-name">和平精英圈 <span class="arrow">&#x25BE;</span></span>
+    <button class="pub-btn" onclick="doPublish()">发表</button>
+  </div>
+
+  <!-- User identity -->
+  <div class="bs-user">
+    <div class="u-av"><img src="https://i.pravatar.cc/72?img=47"></div>
+    <div class="u-info">
+      <div class="u-name">Venus</div>
+      <div class="u-tags">四排 热血青铜IV &#183; 连续活跃2天 <span class="u-change">更换 &#x21CB;</span></div>
+    </div>
+  </div>
+
+  <!-- Caption + Tools (moved above poster) -->
+  <div class="cap-area">
+    <input class="cap-input" id="cap" type="text" placeholder="写下你的游戏想法">
+  </div>
+  <div class="tools-row">
+    <span class="tool-pill"># 话题</span>
+    <span class="tool-pill">&#x25C7; 投票</span>
+  </div>
+
+  <!-- Poster + template selection -->
+  <div class="tpl-label">AI战报配图（可多选）</div>
+  <div class="bs-body">
+    <div class="poster-wrap" id="poster-wrap" onclick="previewImg(document.getElementById('poster-img').src)">
+      <img id="poster-img" src="" alt="">
+      <div class="custom-overlay" id="custom-overlay" style="display:none"></div>
+    </div>
+    <div class="right-panel">
+      <div class="tpl-opts" id="tpl-opts">
+        <div class="tpl-opt on" data-tpl="hl" onclick="toggleTpl(this)"><span class="chk">&#x2713;</span><span class="opt-name">高光时刻</span></div>
+        <div class="tpl-opt" data-tpl="god" onclick="toggleTpl(this)"><span class="chk">&#x2713;</span><span class="opt-name">上帝视角</span></div>
+        <div class="tpl-opt" data-tpl="fail" onclick="toggleTpl(this)"><span class="chk">&#x2713;</span><span class="opt-name">失误复盘</span></div>
+        <div class="tpl-opt" data-tpl="team" onclick="toggleTpl(this)"><span class="chk">&#x2713;</span><span class="opt-name">团队诊断</span></div>
+        <div class="tpl-opt" data-tpl="quote" onclick="toggleTpl(this)"><span class="chk">&#x2713;</span><span class="opt-name">战场箴言</span></div>
+        <div class="tpl-opt" data-tpl="custom" onclick="toggleTpl(this)"><span class="chk">&#x2713;</span><span class="opt-name">自定义</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="suc" id="suc">
+  <div class="suc-i">&#x2713;</div>
+  <h2>发布成功</h2>
+  <p>已发布到和平精英圈</p>
+  <button class="suc-btn" onclick="goFeed()">查看帖子</button>
+  <div class="suc-skip" onclick="document.getElementById('suc').classList.remove('show')">返回战报</div>
+</div>
+
+<!-- Image preview -->
+<div class="img-preview" id="img-pv" onclick="this.classList.remove('show')">
+  <img id="img-pv-src" src="">
+</div>
+
+<!-- Bottom Demo Navigation -->
+<div class="demo-nav" id="demo-nav">
+  <div class="dn-item on" data-page="p-rpt" onclick="navTo('p-rpt')">
+    <span class="dn-icon">&#x1F4CB;</span>
+    <span class="dn-label">AI战报</span>
+  </div>
+  <div class="dn-item" data-page="p-main-feed" onclick="navTo('p-main-feed')">
+    <span class="dn-icon">&#x1F30D;</span>
+    <span class="dn-label">朋友视角</span>
+  </div>
+  <div class="dn-item" data-page="p-feed" onclick="navTo('p-feed')">
+    <span class="dn-icon">&#x1F3AE;</span>
+    <span class="dn-label">圈内视角</span>
+  </div>
+  <div class="dn-item" data-page="p-custom" onclick="navTo('p-custom')">
+    <span class="dn-icon">&#x270F;&#xFE0E;</span>
+    <span class="dn-label">自定义选取</span>
+  </div>
+</div>
+</div>
+
+<script>
+const POSTERS={
+  hl:'海报示意图/高光时刻.png',
+  god:'海报示意图/上帝视角.jpg',
+  fail:'海报示意图/失误复盘.png',
+  team:'海报示意图/团队诊断.png',
+  quote:'海报示意图/战场箴言:明日运势.png',
+  custom:'海报示意图/自定义.png'
+};
+const CAPTIONS={
+  hl:'决赛圈1v2残血反杀！ACE32腰射yyds',
+  god:'今天的运营策略真的绝了，决赛圈教科书',
+  fail:'用平底锅接子弹是什么水平？就是我这种水平',
+  team:'和好友开黑日常，菜是真的菜，快乐也是真的',
+  quote:'当命中率变成艺术，生存本身就是胜利',
+  custom:'今天这把有点东西'
+};
+
+let selectedTpls=new Set(['hl']);
+let currentPreview='hl';
+let pickedTexts=[];
+
+function openSheet(type){
+  if(type==='custom'){
+    // Go to custom selection page
+    showP('p-custom');
+    pickedTexts=[];
+    document.querySelectorAll('.selectable').forEach(el=>el.classList.remove('picked'));
+    document.getElementById('pick-count').textContent='0';
+    return;
+  }
+  selectedTpls.clear();
+  selectedTpls.add(type);
+  currentPreview=type;
+  document.getElementById('poster-img').src=POSTERS[type];
+  document.getElementById('custom-overlay').style.display='none';
+  document.querySelectorAll('.tpl-opt').forEach(opt=>{
+    opt.classList.toggle('on',opt.dataset.tpl===type);
+  });
+  document.getElementById('cap').value='';
+  document.getElementById('demo-nav').style.display='none';
+  document.getElementById('ov').classList.add('show');
+  document.getElementById('bs').classList.add('show');
+}
+
+function toggleTpl(el){
+  const tpl=el.dataset.tpl;
+  if(tpl==='custom'){
+    // Open custom page without losing existing selections
+    closeSheet();
+    setTimeout(()=>{
+      showP('p-custom');
+      // Only reset picked texts if user hasn't already picked some
+      if(pickedTexts.length===0){
+        document.querySelectorAll('.selectable').forEach(el=>el.classList.remove('picked'));
+        document.getElementById('pick-count').textContent='0';
+      }
+    },300);
+    return;
+  }
+  if(selectedTpls.has(tpl)){
+    if(selectedTpls.size>1||(selectedTpls.size===1&&selectedTpls.has(tpl))){
+      if(selectedTpls.size>1){
+        selectedTpls.delete(tpl);
+        el.classList.remove('on');
+      }
+    }
+  }else{
+    selectedTpls.add(tpl);
+    el.classList.add('on');
+  }
+  currentPreview=tpl;
+  document.getElementById('poster-img').src=POSTERS[tpl];
+  document.getElementById('custom-overlay').style.display='none';
+}
+
+// Custom text picking
+function pickText(el){
+  el.classList.toggle('picked');
+  pickedTexts=[];
+  document.querySelectorAll('.selectable.picked').forEach(s=>{
+    pickedTexts.push(s.textContent);
+  });
+  document.getElementById('pick-count').textContent=pickedTexts.length;
+}
+
+function doneCustom(){
+  if(pickedTexts.length===0){alert('请至少选择一条内容');return;}
+  showP('p-rpt');
+  // Add custom to existing selections (don't clear others)
+  selectedTpls.add('custom');
+  currentPreview='custom';
+  document.getElementById('poster-img').src=POSTERS['custom'];
+  // Show overlay text
+  const overlay=document.getElementById('custom-overlay');
+  overlay.style.display='flex';
+  overlay.innerHTML=pickedTexts.map(t=>`<div class="co-line">${t}</div>`).join('');
+  // Sync UI checkboxes with selectedTpls
+  document.querySelectorAll('.tpl-opt').forEach(opt=>{
+    opt.classList.toggle('on',selectedTpls.has(opt.dataset.tpl));
+  });
+  document.getElementById('demo-nav').style.display='none';
+  document.getElementById('ov').classList.add('show');
+  document.getElementById('bs').classList.add('show');
+}
+
+function exitCustom(){
+  showP('p-rpt');
+  // Reopen the sheet with previously selected templates preserved
+  reopenSheet();
+}
+
+function reopenSheet(){
+  // Sync UI checkboxes to match selectedTpls
+  document.querySelectorAll('.tpl-opt').forEach(opt=>{
+    opt.classList.toggle('on',selectedTpls.has(opt.dataset.tpl));
+  });
+  // Show preview of the last active template
+  if(selectedTpls.size>0){
+    const last=[...selectedTpls].pop();
+    currentPreview=last;
+    document.getElementById('poster-img').src=POSTERS[last];
+    if(last==='custom'&&pickedTexts.length>0){
+      const overlay=document.getElementById('custom-overlay');
+      overlay.style.display='flex';
+      overlay.innerHTML=pickedTexts.map(t=>`<div class="co-line">${t}</div>`).join('');
+    }else{
+      document.getElementById('custom-overlay').style.display='none';
+    }
+  }
+  document.getElementById('demo-nav').style.display='none';
+  document.getElementById('ov').classList.add('show');
+  document.getElementById('bs').classList.add('show');
+}
+
+function closeSheet(){
+  document.getElementById('ov').classList.remove('show');
+  document.getElementById('bs').classList.remove('show');
+  document.getElementById('demo-nav').style.display='';
+}
+
+function doPublish(){
+  closeSheet();
+  document.getElementById('suc').classList.add('show');
+}
+
+function goFeed(){
+  document.getElementById('suc').classList.remove('show');
+  const capVal=document.getElementById('cap').value;
+  const displayCap=capVal||'';
+
+  // Set caption in both feed views
+  document.getElementById('fc-txt').textContent=displayCap;
+  document.getElementById('mf-txt').textContent=displayCap;
+  if(!displayCap){
+    document.getElementById('fc-txt').style.display='none';
+    document.getElementById('mf-txt').style.display='none';
+  }else{
+    document.getElementById('fc-txt').style.display='';
+    document.getElementById('mf-txt').style.display='';
+  }
+
+  const imgs=[...selectedTpls].map(t=>POSTERS[t]);
+  const count=imgs.length;
+
+  // Build overlay HTML for custom poster
+  let customOverlay='';
+  if(pickedTexts.length>0){
+    customOverlay=`<div class="co-overlay">${pickedTexts.map(t=>`<div class="co-line">${t}</div>`).join('')}</div>`;
+  }
+
+  let circleHtml='';
+  let mainFeedHtml='';
+
+  if(count===1){
+    const isCustom=selectedTpls.has('custom');
+    const overlay=isCustom?customOverlay:'';
+    circleHtml=`<div class="fc-img" onclick="previewImg(this.querySelector('img').src)"><img src="${imgs[0]}" alt="">${overlay}</div>`;
+    mainFeedHtml=`<div class="fcd-img" onclick="previewImg(this.querySelector('img').src)"><img src="${imgs[0]}" alt="">${overlay}</div>`;
+  }else{
+    // Multi-image grid
+    let gridHtml='';
+    [...selectedTpls].forEach(tpl=>{
+      const src=POSTERS[tpl];
+      if(tpl==='custom'&&pickedTexts.length>0){
+        gridHtml+=`<div class="grid-custom" onclick="previewImg('${src}')"><img src="${src}">${customOverlay}</div>`;
+      }else{
+        gridHtml+=`<img src="${src}" alt="" onclick="previewImg('${src}')">`;
+      }
+    });
+    circleHtml=`<div class="fc-img-grid">${gridHtml}</div>`;
+    mainFeedHtml=`<div class="fcd-grid">${gridHtml}</div>`;
+  }
+
+  document.getElementById('fc-imgs').innerHTML=circleHtml;
+  document.getElementById('mf-imgs').innerHTML=mainFeedHtml;
+  showP('p-feed');
+}
+
+function previewImg(src){
+  document.getElementById('img-pv-src').src=src;
+  document.getElementById('img-pv').classList.add('show');
+}
+
+function showP(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==id));
+  // Sync nav highlight
+  document.querySelectorAll('.dn-item').forEach(n=>n.classList.toggle('on',n.dataset.page===id));
+}
+
+function navTo(id){
+  // If navigating to feeds without having published, show a default placeholder
+  if(id==='p-feed'){
+    const fcImgs=document.getElementById('fc-imgs');
+    if(!fcImgs.innerHTML){
+      document.getElementById('fc-txt').textContent='决赛圈1v2残血反杀！ACE32腰射yyds';
+      document.getElementById('fc-txt').style.display='';
+      fcImgs.innerHTML=`<div class="fc-img" onclick="previewImg(this.querySelector('img').src)"><img src="${POSTERS['hl']}" alt=""></div>`;
+    }
+  }
+  if(id==='p-main-feed'){
+    const mfImgs=document.getElementById('mf-imgs');
+    if(!mfImgs.innerHTML){
+      document.getElementById('mf-txt').textContent='决赛圈1v2残血反杀！ACE32腰射yyds';
+      document.getElementById('mf-txt').style.display='';
+      mfImgs.innerHTML=`<div class="fcd-img" onclick="previewImg(this.querySelector('img').src)"><img src="${POSTERS['hl']}" alt=""></div>`;
+    }
+  }
+  showP(id);
+}
+</script>
+</body>
+</html>
