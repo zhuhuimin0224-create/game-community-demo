@@ -110,6 +110,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
 .cust-card-preview .ccp-quotes{min-height:14px}
 .cust-card-preview .ccp-q{font-size:9px;color:rgba(255,255,255,0.8);line-height:1.6;padding-left:7px;border-left:2px solid var(--teal);margin-bottom:5px}
 .cust-card-preview .ccp-foot{margin-top:10px;font-size:7px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between}
+/* 划线选原文 */
+.ql-body{font-size:12px;line-height:2.4;color:var(--text3)}
+.ql-body .ql{color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;padding-bottom:1px;transition:all 0.15s}
+.ql-body .ql:active{opacity:0.6}
+.ql-body .ql.on{color:var(--teal);border-bottom-color:var(--teal);font-weight:500}
 .data-sel{padding:0 16px 12px}
 .data-sel-title{font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:500}
 .data-sel-tags{display:flex;flex-wrap:wrap;gap:6px}
@@ -296,16 +301,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;backg
   </div>
 </div>
 
-<!-- Original text selection -->
+<!-- Original text selection - 划线风格 -->
 <div class="data-sel">
-  <div class="data-sel-title">选择原文</div>
-  <div class="quote-opts" id="cust-quotes">
-    <div class="quote-opt on" onclick="toggleCQ(this)" data-q="决赛圈1v2残血反打，ACE32 19米腰射灭满编队"><span class="qo-chk">&#x2713;</span><span class="qo-text">决赛圈1v2残血反打，ACE32 19米腰射灭满编队</span></div>
-    <div class="quote-opt" onclick="toggleCQ(this)" data-q="首局P城1.9米贴脸手枪反杀，R1895命中率50%"><span class="qo-chk">&#x2713;</span><span class="qo-text">首局P城1.9米贴脸手枪反杀，R1895命中率50%</span></div>
-    <div class="quote-opt" onclick="toggleCQ(this)" data-q="三次冲进前10%，深谙「活着才有输出」的真谛"><span class="qo-chk">&#x2713;</span><span class="qo-text">三次冲进前10%，深谙「活着才有输出」的真谛</span></div>
-    <div class="quote-opt" onclick="toggleCQ(this)" data-q="S城巷战双杀灭队，AKM腰射压枪稳如老狗"><span class="qo-chk">&#x2713;</span><span class="qo-text">S城巷战双杀灭队，AKM腰射压枪稳如老狗</span></div>
-    <div class="quote-opt" onclick="toggleCQ(this)" data-q="伏地魔的终极境界，是让敌人以为草在动，其实是你的三级包在呼吸"><span class="qo-chk">&#x2713;</span><span class="qo-text">伏地魔的终极境界，是让敌人以为草在动，其实是你的三级包在呼吸</span></div>
-  </div>
+  <div class="data-sel-title">划线选择原文</div>
+  <div class="ql-body">今日三次冲进前10%的壮举，证明了你深谙「活着才有输出」的真谛。<span class="ql on" onclick="toggleQL(this)" data-q="决赛圈1v2残血反打，ACE32 19米腰射灭满编队">决赛圈1v2残血反打，ACE32 19米腰射灭满编队。</span><span class="ql" onclick="toggleQL(this)" data-q="首局P城1.9米贴脸手枪反杀，R1895命中率50%">首局P城1.9米贴脸手枪反杀，R1895命中率50%。</span><span class="ql" onclick="toggleQL(this)" data-q="S城巷战双杀灭队，AKM腰射压枪稳如老狗">S城巷战双杀灭队，AKM腰射压枪稳如老狗。</span><span class="ql" onclick="toggleQL(this)" data-q="三次冲进前10%，深谙「活着才有输出」的真谛">三次冲进前10%，深谙活着才有输出的真谛。</span>好友M416命中率17%，成功用子弹画了幅抽象画。<span class="ql" onclick="toggleQL(this)" data-q="伏地魔的终极境界，是让敌人以为草在动，其实是你的三级包在呼吸">伏地魔的终极境界，是让敌人以为草在动，其实是你的三级包在呼吸。</span></div>
 </div>
 
 <div style="height:60px"></div>
@@ -610,7 +609,7 @@ function toggleDtag(el){
   el.classList.toggle('on');
   updateCustPreview();
 }
-function toggleCQ(el){
+function toggleQL(el){
   el.classList.toggle('on');
   updateCustPreview();
 }
@@ -619,7 +618,7 @@ function updateCustPreview(){
   document.querySelectorAll('.dtag.on').forEach(t=>tags.push(t.dataset.d));
   document.getElementById('ccp-tags').innerHTML=tags.map(t=>`<span class="ccp-tag">${t}</span>`).join('');
   pickedTexts=[];
-  document.querySelectorAll('.quote-opt.on').forEach(q=>pickedTexts.push(q.dataset.q));
+  document.querySelectorAll('.ql.on').forEach(q=>pickedTexts.push(q.dataset.q));
   document.getElementById('ccp-quotes').innerHTML=pickedTexts.map(q=>`<div class="ccp-q">${q}</div>`).join('');
 }
 
@@ -649,7 +648,7 @@ function doneCustom(){
     const tags=[];
     document.querySelectorAll('.dtag.on').forEach(t=>tags.push(t.dataset.d));
     const quotes=[];
-    document.querySelectorAll('.quote-opt.on').forEach(q=>quotes.push(q.dataset.q));
+    document.querySelectorAll('.ql.on').forEach(q=>quotes.push(q.dataset.q));
     inlineCard.querySelector('.ccp-tags').innerHTML=tags.map(t=>`<span class="ccp-tag">${t}</span>`).join('');
     inlineCard.querySelector('.ccp-quotes').innerHTML=quotes.map(q=>`<div class="ccp-q">${q}</div>`).join('');
   }
@@ -724,7 +723,7 @@ function goFeed(){
     const tags=[];
     document.querySelectorAll('.dtag.on').forEach(t=>tags.push(t.dataset.d));
     const quotes=[];
-    document.querySelectorAll('.quote-opt.on').forEach(q=>quotes.push(q.dataset.q));
+    document.querySelectorAll('.ql.on').forEach(q=>quotes.push(q.dataset.q));
     customCardHtml=`<div class="cust-card-preview" style="margin:0;width:100%;border-radius:6px"><div class="ccp-head">和平精英 · AI战报 · 5月22日</div><div class="ccp-title">1v2 残血反杀</div><div class="ccp-tags">${tags.map(t=>`<span class="ccp-tag">${t}</span>`).join('')}</div><div class="ccp-line"></div><div class="ccp-quotes">${quotes.map(q=>`<div class="ccp-q">${q}</div>`).join('')}</div><div class="ccp-foot"><span>微信游戏社区</span><span>Venus</span></div></div>`;
   }
 
